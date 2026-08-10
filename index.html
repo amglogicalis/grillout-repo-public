@@ -192,6 +192,35 @@
     .btn-secondary { background: rgba(255, 255, 255, 0.05); border-color: var(--border-color); color: var(--text-muted); }
     .btn-danger { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; padding: 4px 12px; font-size: 0.78rem; border-radius: 20px; }
 
+    /* Target Chips Container */
+    .target-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      background: rgba(27, 67, 50, 0.8);
+      border: 1px solid var(--accent-lime);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-remove {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--badge-red);
+      font-size: 0.9rem;
+    }
+
+    .chip-remove:hover { color: #fff; }
+
     table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.88rem; }
     th { background: rgba(15, 36, 23, 0.9); color: var(--accent-lime); text-align: left; padding: 12px; font-family: var(--font-heading); font-weight: 600; border-bottom: 1px solid var(--border-color); }
     td { padding: 12px; border-bottom: 1px solid rgba(45, 106, 79, 0.2); }
@@ -355,15 +384,26 @@
             <textarea id="pubPayload" rows="4" placeholder='{"subject": "Nueva Venta!", "message": "Cliente compró Plan Pro", "user": "adrian@terra.io"}' required></textarea>
           </div>
 
+          <!-- Multi-Target Selector with [+] Accumulator Button -->
           <div class="form-group">
-            <label>Select Destination Target Endpoint from Registry:</label>
-            <select id="pubRegisteredTarget" onchange="applyRegisteredTarget()">
-              <option value="">-- Usar Endpoint de Registro Guardado o Entrada Manual --</option>
-            </select>
+            <label>Add Destination Target Endpoints from Registry:</label>
+            <div style="display: flex; gap: 10px;">
+              <select id="pubRegisteredTarget" style="flex: 1;">
+                <option value="">-- Selecciona un Endpoint para Acumular --</option>
+              </select>
+              <button type="button" class="btn" onclick="addSelectedTarget()" style="padding: 8px 16px;">➕ Sumar Destino</button>
+            </div>
           </div>
 
           <div class="form-group">
-            <label>Select Multicast Channels to Dispatch:</label>
+            <label>Target Endpoint URLs / Destination References (Separados por Comas):</label>
+            <input type="text" id="pubTargetUrl" placeholder="https://discord.com/..., https://hooks.slack.com/..., soporte@empresa.com" oninput="parseTargetUrlChips()">
+            <!-- Dynamic Target Chips Visual Container -->
+            <div id="targetChips" class="target-chips"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Active Multicast Channels (Auto-detectados por URL o Checkbox manual):</label>
             <div class="checkbox-grid">
               <label class="checkbox-item"><input type="checkbox" id="tgtDiscord" checked> 💬 Discord Webhook</label>
               <label class="checkbox-item"><input type="checkbox" id="tgtSlack" checked> 📱 Slack Webhook</label>
@@ -374,12 +414,7 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Target Endpoint URL / Destination Reference</label>
-            <input type="text" id="pubTargetUrl" placeholder="https://discord.com/api/webhooks/... or https://hooks.slack.com/...">
-          </div>
-
-          <button type="submit" class="btn" style="width: 100%; font-size: 1rem; padding: 12px;">📢 Dispatch Multicast Chirp</button>
+          <button type="submit" class="btn" style="width: 100%; font-size: 1rem; padding: 12px; margin-top: 8px;">📢 Dispatch Multicast Chirp</button>
         </form>
         <div id="pubToast" class="status-toast"></div>
       </div>
@@ -663,7 +698,7 @@
     function renderTargetsList() {
       const tbody = document.getElementById('targetsTableBody');
       const select = document.getElementById('pubRegisteredTarget');
-      select.innerHTML = '<option value="">-- Usar Endpoint de Registro Guardado o Entrada Manual --</option>';
+      select.innerHTML = '<option value="">-- Selecciona un Endpoint para Acumular --</option>';
 
       if (targetRegistry.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No hay destinos registrados. Haz clic en "Seed Demo Endpoints" arriba para cargar ejemplos.</td></tr>';
@@ -683,13 +718,70 @@
           </tr>
         `;
 
-        select.innerHTML += `<option value="${t.endpoint}">${t.alias} (${t.type})</option>`;
+        select.innerHTML += `<option value="${t.endpoint}" data-alias="${t.alias}" data-type="${t.type}">${t.alias} (${t.type})</option>`;
       });
     }
 
-    function applyRegisteredTarget() {
-      const val = document.getElementById('pubRegisteredTarget').value;
-      if (val) document.getElementById('pubTargetUrl').value = val;
+    // MULTI-TARGET ACCUMULATOR (+) FUNCTIONALITY
+    function addSelectedTarget() {
+      const select = document.getElementById('pubRegisteredTarget');
+      const selectedOption = select.options[select.selectedIndex];
+      if (!selectedOption || !selectedOption.value) {
+        showModal('Selecciona un Endpoint', 'Por favor selecciona un destino del desplegable antes de hacer clic en (+ Sumar Destino).', '⚠️');
+        return;
+      }
+
+      const endpoint = selectedOption.value;
+      const alias = selectedOption.getAttribute('data-alias') || endpoint;
+      const type = selectedOption.getAttribute('data-type') || 'webhook';
+
+      const input = document.getElementById('pubTargetUrl');
+      let currentUrls = input.value.split(',').map(s => s.trim()).filter(Boolean);
+
+      if (!currentUrls.includes(endpoint)) {
+        currentUrls.push(endpoint);
+        input.value = currentUrls.join(', ');
+
+        // Auto-check corresponding channel checkbox
+        if (type === 'discord') document.getElementById('tgtDiscord').checked = true;
+        if (type === 'slack') document.getElementById('tgtSlack').checked = true;
+        if (type === 'telegram') document.getElementById('tgtTelegram').checked = true;
+        if (type === 'webhook') document.getElementById('tgtWebhook').checked = true;
+        if (type === 'email') document.getElementById('tgtEmail').checked = true;
+        if (type === 'github_issue') document.getElementById('tgtIssue').checked = true;
+
+        parseTargetUrlChips();
+        showModal('Destino Acumulado', `Añadido <strong>${alias}</strong> a la lista de difusión simultánea.`, '➕');
+      } else {
+        showModal('Destino ya Añadido', `El endpoint <strong>${alias}</strong> ya está presente en la lista de envío.`, 'ℹ️');
+      }
+    }
+
+    function removeChipUrl(urlToRemove) {
+      const input = document.getElementById('pubTargetUrl');
+      let currentUrls = input.value.split(',').map(s => s.trim()).filter(Boolean);
+      currentUrls = currentUrls.filter(u => u !== urlToRemove);
+      input.value = currentUrls.join(', ');
+      parseTargetUrlChips();
+    }
+
+    function parseTargetUrlChips() {
+      const inputVal = document.getElementById('pubTargetUrl').value;
+      const urls = inputVal.split(',').map(s => s.trim()).filter(Boolean);
+      const container = document.getElementById('targetChips');
+      container.innerHTML = '';
+
+      urls.forEach(url => {
+        const foundInReg = targetRegistry.find(t => t.endpoint === url);
+        const label = foundInReg ? foundInReg.alias : url;
+
+        container.innerHTML += `
+          <div class="chip">
+            <span>📍 ${label}</span>
+            <span class="chip-remove" onclick="removeChipUrl('${url}')">&times;</span>
+          </div>
+        `;
+      });
     }
 
     async function loadQueues() {
@@ -744,7 +836,7 @@
       const channel = document.getElementById('pubChannel').value.trim();
       const priority = document.getElementById('pubPriority').value;
       const groupKey = document.getElementById('pubGroupKey').value.trim();
-      const targetUrl = document.getElementById('pubTargetUrl').value.trim();
+      const targetUrlsRaw = document.getElementById('pubTargetUrl').value.trim();
       let payload;
 
       try {
@@ -754,10 +846,16 @@
         return;
       }
 
+      const urlList = targetUrlsRaw.split(',').map(s => s.trim()).filter(Boolean);
       const targets = [];
-      if (document.getElementById('tgtDiscord').checked && targetUrl) targets.push({ type: 'discord', endpoint: targetUrl });
-      if (document.getElementById('tgtSlack').checked && targetUrl) targets.push({ type: 'slack', endpoint: targetUrl });
-      if (document.getElementById('tgtWebhook').checked && targetUrl) targets.push({ type: 'webhook', endpoint: targetUrl });
+
+      urlList.forEach(url => {
+        if (url.includes('discord.com')) targets.push({ type: 'discord', endpoint: url });
+        else if (url.includes('slack.com')) targets.push({ type: 'slack', endpoint: url });
+        else if (url.includes('@')) targets.push({ type: 'email', endpoint: url });
+        else if (url.includes('/') && !url.startsWith('http')) targets.push({ type: 'github_issue', endpoint: url });
+        else targets.push({ type: 'webhook', endpoint: url });
+      });
 
       try {
         const owner = authenticatedUser.login;
@@ -801,7 +899,7 @@
         });
 
         if (putRes.ok) {
-          showModal('Chirp Publicado', `Multicast Chirp enviado con éxito al canal <strong>${channel}</strong>.<br>ID: <code>${chirpId}</code> (${targets.length} destinos de difusión).`, '📢');
+          showModal('Chirp Publicado', `Multicast Chirp enviado con éxito al canal <strong>${channel}</strong>.<br>ID: <code>${chirpId}</code> (${targets.length} destinos de difusión en paralelo).`, '📢');
           loadQueues();
         } else {
           throw new Error(await putRes.text());
