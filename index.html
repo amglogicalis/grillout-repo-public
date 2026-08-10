@@ -166,10 +166,6 @@
       box-shadow: 0 0 10px rgba(82, 183, 136, 0.25);
     }
 
-    .checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px; }
-    .checkbox-item { background: rgba(11, 25, 16, 0.6); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; }
-    .checkbox-item input { accent-color: var(--accent-lime); cursor: pointer; }
-
     .switch-group { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(11, 25, 16, 0.6); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; }
 
     .btn {
@@ -402,19 +398,7 @@
             <div id="targetChips" class="target-chips"></div>
           </div>
 
-          <div class="form-group">
-            <label>Active Multicast Channels (Auto-detectados por URL o Checkbox manual):</label>
-            <div class="checkbox-grid">
-              <label class="checkbox-item"><input type="checkbox" id="tgtDiscord" checked> 💬 Discord Webhook</label>
-              <label class="checkbox-item"><input type="checkbox" id="tgtSlack" checked> 📱 Slack Webhook</label>
-              <label class="checkbox-item"><input type="checkbox" id="tgtTelegram"> ✈️ Telegram Bot</label>
-              <label class="checkbox-item"><input type="checkbox" id="tgtWebhook" checked> 🌐 Custom HTTP Webhook</label>
-              <label class="checkbox-item"><input type="checkbox" id="tgtEmail"> 📧 Email ($0 Actions)</label>
-              <label class="checkbox-item"><input type="checkbox" id="tgtIssue"> 🐙 GitHub Issue</label>
-            </div>
-          </div>
-
-          <button type="submit" class="btn" style="width: 100%; font-size: 1rem; padding: 12px; margin-top: 8px;">📢 Dispatch Multicast Chirp</button>
+          <button type="submit" class="btn" style="width: 100%; font-size: 1rem; padding: 12px; margin-top: 12px;">📢 Dispatch Multicast Chirp</button>
         </form>
         <div id="pubToast" class="status-toast"></div>
       </div>
@@ -722,7 +706,6 @@
       });
     }
 
-    // MULTI-TARGET ACCUMULATOR (+) FUNCTIONALITY
     function addSelectedTarget() {
       const select = document.getElementById('pubRegisteredTarget');
       const selectedOption = select.options[select.selectedIndex];
@@ -733,7 +716,6 @@
 
       const endpoint = selectedOption.value;
       const alias = selectedOption.getAttribute('data-alias') || endpoint;
-      const type = selectedOption.getAttribute('data-type') || 'webhook';
 
       const input = document.getElementById('pubTargetUrl');
       let currentUrls = input.value.split(',').map(s => s.trim()).filter(Boolean);
@@ -741,15 +723,6 @@
       if (!currentUrls.includes(endpoint)) {
         currentUrls.push(endpoint);
         input.value = currentUrls.join(', ');
-
-        // Auto-check corresponding channel checkbox
-        if (type === 'discord') document.getElementById('tgtDiscord').checked = true;
-        if (type === 'slack') document.getElementById('tgtSlack').checked = true;
-        if (type === 'telegram') document.getElementById('tgtTelegram').checked = true;
-        if (type === 'webhook') document.getElementById('tgtWebhook').checked = true;
-        if (type === 'email') document.getElementById('tgtEmail').checked = true;
-        if (type === 'github_issue') document.getElementById('tgtIssue').checked = true;
-
         parseTargetUrlChips();
         showModal('Destino Acumulado', `Añadido <strong>${alias}</strong> a la lista de difusión simultánea.`, '➕');
       } else {
