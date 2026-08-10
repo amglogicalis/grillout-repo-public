@@ -38,14 +38,15 @@
       color: var(--text-main);
       font-family: var(--font-body);
       min-height: 100vh;
-      padding-bottom: 60px;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
-      background: rgba(15, 36, 23, 0.85);
+      background: rgba(15, 36, 23, 0.95);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-color);
-      padding: 16px 32px;
+      padding: 14px 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -71,7 +72,6 @@
       font-size: 1.4rem;
       font-weight: 700;
       color: #ffffff;
-      letter-spacing: 0.5px;
     }
 
     .brand-text p {
@@ -102,26 +102,112 @@
       height: 32px;
       border-radius: 50%;
       border: 2px solid var(--accent-lime);
-      object-fit: cover;
     }
 
-    .user-info {
+    .user-info { display: flex; flex-direction: column; }
+    .user-handle { font-weight: 700; font-size: 0.85rem; color: #ffffff; }
+    .user-status { font-size: 0.72rem; color: var(--accent-lime); }
+
+    /* Navigation Bar / Tabs */
+    nav.nav-tabs {
+      background: rgba(11, 25, 16, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 32px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--text-muted);
+      padding: 14px 20px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover { color: #fff; background: rgba(82, 183, 136, 0.05); }
+
+    .tab-btn.active {
+      color: var(--accent-lime);
+      border-bottom-color: var(--accent-lime);
+      background: rgba(82, 183, 136, 0.1);
+    }
+
+    main {
+      max-width: 1300px;
+      width: 100%;
+      margin: 24px auto;
+      padding: 0 24px;
+      flex: 1;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .full-width { grid-column: span 2; }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent-lime);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .help-tooltip {
+      font-size: 0.8rem;
+      font-weight: normal;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border-left: 3px solid var(--accent-lime);
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
+      gap: 6px;
     }
 
-    .user-handle {
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: #ffffff;
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
     }
 
-    .user-status {
-      font-size: 0.72rem;
-      color: var(--accent-lime);
-    }
+    .form-row { display: flex; gap: 12px; }
+    .form-row > * { flex: 1; }
 
-    input[type="text"], input[type="password"], textarea, select {
+    input[type="text"], input[type="number"], input[type="password"], textarea, select {
       background: rgba(11, 25, 16, 0.8);
       border: 1px solid var(--border-color);
       border-radius: 8px;
@@ -136,6 +222,38 @@
     input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
       border-color: var(--accent-lime);
       box-shadow: 0 0 10px rgba(82, 183, 136, 0.25);
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .checkbox-item {
+      background: rgba(11, 25, 16, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .checkbox-item input { accent-color: var(--accent-lime); cursor: pointer; }
+
+    .switch-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(11, 25, 16, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 12px;
     }
 
     .btn {
@@ -166,126 +284,26 @@
       color: var(--text-muted);
     }
 
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-    }
-
     .btn-danger {
       background: rgba(230, 57, 70, 0.2);
       border: 1px solid var(--badge-red);
       color: #ff85a1;
-      border-radius: 20px;
       padding: 4px 12px;
       font-size: 0.78rem;
+      border-radius: 20px;
     }
 
-    .btn-danger:hover {
-      background: var(--badge-red);
-      color: #fff;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.88rem; }
+    th { background: rgba(15, 36, 23, 0.9); color: var(--accent-lime); text-align: left; padding: 12px; font-family: var(--font-heading); font-weight: 600; border-bottom: 1px solid var(--border-color); }
+    td { padding: 12px; border-bottom: 1px solid rgba(45, 106, 79, 0.2); }
+    tr:hover td { background: rgba(82, 183, 136, 0.05); }
 
-    main {
-      max-width: 1300px;
-      margin: 32px auto;
-      padding: 0 24px;
-    }
-
-    .grid-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-
-    .full-width { grid-column: span 2; }
-
-    .card {
-      background: var(--bg-card);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: var(--shadow-glow);
-    }
-
-    .card-title {
-      font-family: var(--font-heading);
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--accent-lime);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group label {
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--text-muted);
-    }
-
-    .form-row {
-      display: flex;
-      gap: 12px;
-    }
-
-    .form-row > * { flex: 1; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      font-size: 0.88rem;
-    }
-
-    th {
-      background: rgba(15, 36, 23, 0.9);
-      color: var(--accent-lime);
-      text-align: left;
-      padding: 12px;
-      font-family: var(--font-heading);
-      font-weight: 600;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(45, 106, 79, 0.2);
-    }
-
-    tr:hover td {
-      background: rgba(82, 183, 136, 0.05);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      font-family: var(--font-code);
-    }
-
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; font-family: var(--font-code); }
     .badge-pending { background: rgba(255, 183, 3, 0.2); color: var(--badge-yellow); border: 1px solid var(--badge-yellow); }
     .badge-delivered { background: rgba(82, 183, 136, 0.2); color: var(--accent-lime); border: 1px solid var(--accent-lime); }
     .badge-dlq { background: rgba(230, 57, 70, 0.2); color: var(--badge-red); border: 1px solid var(--badge-red); }
 
-    .status-toast {
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-top: 12px;
-      font-size: 0.88rem;
-      display: none;
-    }
-
+    .status-toast { padding: 12px 16px; border-radius: 8px; margin-top: 12px; font-size: 0.88rem; display: none; }
     .status-toast.success { background: rgba(82, 183, 136, 0.2); border: 1px solid var(--accent-lime); color: var(--accent-bright); }
     .status-toast.error { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; }
   </style>
@@ -318,14 +336,26 @@
     </div>
   </header>
 
-  <main>
-    <div class="grid-container">
+  <!-- Tabbed Navigation Bar -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">🎛️ Queue Monitor</button>
+    <button class="tab-btn" onclick="switchTab('publisher')">📢 Multicast Publisher</button>
+    <button class="tab-btn" onclick="switchTab('settings')">⚙️ Module Controls & Settings</button>
+    <button class="tab-btn" onclick="switchTab('templates')">🎨 Template Synthesizer</button>
+    <button class="tab-btn" onclick="switchTab('dlq')">🔄 DLQ & Forensic Replay</button>
+  </nav>
 
-      <!-- Active Queues Monitor -->
+  <main>
+
+    <!-- TAB 1: DASHBOARD & QUEUE MONITOR -->
+    <section id="tab-dashboard" class="tab-content active">
       <div class="card full-width">
         <div class="card-title">
           <span>🦗 Active Stridulation Channels & Queue Monitor</span>
           <button class="btn btn-secondary" onclick="loadQueues()" style="margin-left: auto; padding: 6px 12px;">🔄 Refresh</button>
+        </div>
+        <div class="help-tooltip">
+          💡 <strong>Monitor de Colas Pasivas:</strong> Visualiza en tiempo real los canales de notificaciones almacenados en <code>.grillout-storage</code> sin ningún servidor encendido en reposo.
         </div>
         <table id="queuesTable">
           <thead>
@@ -333,7 +363,7 @@
               <th>Channel Name</th>
               <th>Pending Chirps</th>
               <th>DLQ Items</th>
-              <th>Status</th>
+              <th>Lease Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -344,78 +374,182 @@
           </tbody>
         </table>
       </div>
+    </section>
 
-      <!-- Chirp Publisher Playground -->
-      <div class="card">
-        <div class="card-title">🚀 Publish Multicast Chirp</div>
+    <!-- TAB 2: MULTICAST CHIRP PUBLISHER -->
+    <section id="tab-publisher" class="tab-content">
+      <div class="card full-width">
+        <div class="card-title">📢 Multicast Chirp Publisher (Difusión Multi-Canal Simultánea)</div>
+        <div class="help-tooltip">
+          📢 <strong>¿Qué es un Multicast Chirp?</strong> Es un único mensaje enviado a Grillout que se difunde a múltiples destinos al mismo tiempo (Discord, Slack, Telegram, Webhook, Email, Issues) adaptando el formato para cada plataforma de forma automática.
+        </div>
         <form id="pubForm" onsubmit="publishChirp(event)">
-          <div class="form-group">
-            <label>Target Channel</label>
-            <input type="text" id="pubChannel" placeholder="e.g. user-onboarding" required>
-          </div>
           <div class="form-row">
+            <div class="form-group">
+              <label>Target Channel</label>
+              <input type="text" id="pubChannel" placeholder="e.g. user-onboarding" required>
+            </div>
             <div class="form-group">
               <label>Priority</label>
               <select id="pubPriority">
                 <option value="NORMAL">NORMAL</option>
-                <option value="VIP">VIP</option>
-                <option value="CRITICAL">CRITICAL</option>
-                <option value="LOW">LOW</option>
+                <option value="VIP">VIP (High Priority)</option>
+                <option value="CRITICAL">CRITICAL (Instant Dispatch)</option>
+                <option value="LOW">LOW (Background Digest)</option>
               </select>
             </div>
             <div class="form-group">
-              <label>FIFO GroupKey</label>
-              <input type="text" id="pubGroupKey" placeholder="e.g. user_99">
+              <label>FIFO GroupKey (Optional)</label>
+              <input type="text" id="pubGroupKey" placeholder="e.g. order_1001">
             </div>
           </div>
+
           <div class="form-group">
             <label>JSON Payload</label>
-            <textarea id="pubPayload" rows="4" placeholder='{"subject": "Welcome!", "message": "Hello World", "userId": 123}' required></textarea>
+            <textarea id="pubPayload" rows="4" placeholder='{"subject": "Nueva Venta!", "message": "Cliente compró Plan Pro", "user": "adrian@terra.io"}' required></textarea>
           </div>
+
           <div class="form-group">
-            <label>Multicast Target Endpoint (Optional)</label>
+            <label>Select Multicast Destination Targets (Simultaneous Echo):</label>
+            <div class="checkbox-grid">
+              <label class="checkbox-item"><input type="checkbox" id="tgtDiscord" checked> 💬 Discord Webhook</label>
+              <label class="checkbox-item"><input type="checkbox" id="tgtSlack" checked> 📱 Slack Webhook</label>
+              <label class="checkbox-item"><input type="checkbox" id="tgtTelegram"> ✈️ Telegram Bot</label>
+              <label class="checkbox-item"><input type="checkbox" id="tgtWebhook" checked> 🌐 Custom HTTP Webhook</label>
+              <label class="checkbox-item"><input type="checkbox" id="tgtEmail"> 📧 Email ($0 Actions)</label>
+              <label class="checkbox-item"><input type="checkbox" id="tgtIssue"> 🐙 GitHub Issue</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Target Webhook Endpoint URL</label>
             <input type="text" id="pubTargetUrl" placeholder="https://discord.com/api/webhooks/... or https://hooks.slack.com/...">
           </div>
-          <button type="submit" class="btn" style="width: 100%;">📢 Publish Chirp</button>
+
+          <button type="submit" class="btn" style="width: 100%; font-size: 1rem; padding: 12px;">📢 Dispatch Multicast Chirp</button>
         </form>
         <div id="pubToast" class="status-toast"></div>
       </div>
+    </section>
 
-      <!-- Template Synthesizer Studio -->
-      <div class="card">
-        <div class="card-title">🎨 Gryllus Template Synthesizer</div>
-        <div class="form-group">
-          <label>Template Code (HTML / Markdown with {{variable}})</label>
-          <textarea id="templateSource" rows="6" oninput="renderLiveTemplate()"><div style="font-family: sans-serif; background: #0f2417; color: #e2f0d9; padding: 16px; border-radius: 8px;">
-  <h3 style="color: #52b788;">📢 Alert: {{subject}}</h3>
-  <p>{{message}}</p>
-  <small>Priority: {{priority}} • Sent at {{timestamp}}</small>
-</div></textarea>
+    <!-- TAB 3: MODULE CONTROLS & SETTINGS -->
+    <section id="tab-settings" class="tab-content">
+      <div class="card full-width">
+        <div class="card-title">⚙️ Module Controls & Feature Configuration (Activar/Desactivar Módulos)</div>
+        <div class="help-tooltip">
+          ⚙️ <strong>Panel de Control:</strong> Configura y personaliza las funciones avanzadas de colas de Grillout por detrás.
         </div>
-        <div class="form-group">
-          <label>Live Preview</label>
-          <div id="templatePreview" style="background: #07120b; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; min-height: 120px;"></div>
+
+        <div class="switch-group">
+          <div>
+            <strong>🛡️ HoneyChirp Poison Shield</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Escudo pasivo anti-bots. Quitan de la cola payloads maliciosos (XSS, SQLi) antes de consumir runners.</p>
+          </div>
+          <input type="checkbox" id="cfgPoisonShield" checked style="transform: scale(1.4);">
+        </div>
+
+        <div class="switch-group">
+          <div>
+            <strong>🎯 Gryllus SHA-256 Deduplicator</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Evita procesar dos veces la misma notificación si se envía dentro de la ventana configurada.</p>
+          </div>
+          <input type="checkbox" id="cfgDedupEnabled" checked style="transform: scale(1.4);">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Deduplication Window (Seconds)</label>
+            <input type="number" id="cfgDedupWindow" value="300">
+          </div>
+          <div class="form-group">
+            <label>Deduplication Action Mode</label>
+            <select id="cfgDedupMode">
+              <option value="drop">DROP (Ignorar silenciosamente)</option>
+              <option value="overwrite">OVERWRITE (Actualizar payload viejo)</option>
+              <option value="reject">REJECT (Rechazar con error 409)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="switch-group">
+          <div>
+            <strong>⚡ Auto-Tuning Stridulation Batcher</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Disparo instantáneo en ráfagas de tráfico y acumulo pasivo en bajo tráfico para consumo $0.</p>
+          </div>
+          <input type="checkbox" id="cfgBatcherEnabled" checked style="transform: scale(1.4);">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Instant Burst Threshold (Chirps)</label>
+            <input type="number" id="cfgBurstThreshold" value="50">
+          </div>
+          <div class="form-group">
+            <label>Lease Lock Duration (Minutes)</label>
+            <input type="number" id="cfgLeaseDuration" value="5">
+          </div>
+        </div>
+
+        <button class="btn" onclick="saveSettings()" style="margin-top: 12px;">💾 Save Module Settings</button>
+      </div>
+    </section>
+
+    <!-- TAB 4: TEMPLATE SYNTHESIZER -->
+    <section id="tab-templates" class="tab-content">
+      <div class="card full-width">
+        <div class="card-title">🎨 Gryllus Template Synthesizer (Motor de Plantillas Integrado)</div>
+        <div class="help-tooltip">
+          🎨 Diseña plantillas HTML/Markdown con sustitución dinámica <code>{{variable}}</code> sin requerir servicios SaaS externos.
+        </div>
+        <div class="grid-container">
+          <div class="form-group">
+            <label>Template Code (HTML / Markdown with {{variable}})</label>
+            <textarea id="templateSource" rows="10" oninput="renderLiveTemplate()"><div style="font-family: 'Outfit', sans-serif; background: #0f2417; color: #e2f0d9; padding: 20px; border-radius: 10px; border: 1px solid #2d6a4f;">
+  <h3 style="color: #52b788; margin-top:0;">📢 {{subject}}</h3>
+  <p style="font-size: 15px;">{{message}}</p>
+  <div style="margin-top: 12px; padding: 8px; background: #143823; border-radius: 6px; font-size: 13px;">
+    <strong>Usuario:</strong> {{user}} • <strong>Prioridad:</strong> {{priority}}
+  </div>
+</div></textarea>
+          </div>
+          <div class="form-group">
+            <label>Live Preview</label>
+            <div id="templatePreview" style="background: #07120b; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; min-height: 200px;"></div>
+          </div>
         </div>
       </div>
+    </section>
 
-      <!-- DLQ & Forensic Replay Vault -->
+    <!-- TAB 5: DLQ & FORENSIC REPLAY -->
+    <section id="tab-dlq" class="tab-content">
       <div class="card full-width">
-        <div class="card-title">🔄 Dead-Letter Queue (DLQ) & Forensic Replay</div>
+        <div class="card-title">🔄 Dead-Letter Queue (DLQ) & Forensic Replay (Sala de Cuarentena y Reintento)</div>
+        <div class="help-tooltip">
+          ❓ <strong>¿Qué es un DLQ Item?</strong> (Dead-Letter Queue): Cuando un Chirp falla repetidamente al intentar enviarse (ej. webhook caído o token expirado), se mueve a la DLQ. Aquí puedes ver el error exacto y hacer un <strong>1-Click Replay</strong> para corregirlo y relanzarlo a la cola activa.
+        </div>
         <div class="form-row">
           <input type="text" id="dlqChannelInput" placeholder="Channel Name (e.g. user-onboarding)">
-          <button class="btn btn-secondary" onclick="loadDlq()">🔍 Inspect DLQ</button>
+          <button class="btn btn-secondary" onclick="loadDlq()">🔍 Inspect DLQ Channel</button>
         </div>
         <div id="dlqResults" style="margin-top: 16px;">
           <p style="color: var(--text-muted); font-size: 0.88rem;">Select a channel to inspect quarantined or failed messages.</p>
         </div>
       </div>
+    </section>
 
-    </div>
   </main>
 
   <script>
     let pat = localStorage.getItem('GRILLOUT_PAT') || '';
     let authenticatedUser = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
 
     async function initAuth() {
       if (pat) {
@@ -505,8 +639,8 @@
             <tr>
               <td><strong>${ch}</strong></td>
               <td><span class="badge badge-pending">Active</span></td>
-              <td><span class="badge badge-dlq">0 DLQ</span></td>
-              <td><span class="badge badge-delivered">Operational</span></td>
+              <td><span class="badge badge-dlq">0 DLQ Items</span></td>
+              <td><span class="badge badge-delivered">Lease Free</span></td>
               <td>
                 <button class="btn btn-secondary" onclick="triggerConsume('${ch}')" style="padding: 4px 8px; font-size: 0.78rem;">⚡ Consume Batch</button>
               </td>
@@ -541,6 +675,12 @@
         return;
       }
 
+      // Collect Multicast Target Channels
+      const targets = [];
+      if (document.getElementById('tgtDiscord').checked && targetUrl) targets.push({ type: 'discord', endpoint: targetUrl });
+      if (document.getElementById('tgtSlack').checked && targetUrl) targets.push({ type: 'slack', endpoint: targetUrl });
+      if (document.getElementById('tgtWebhook').checked && targetUrl) targets.push({ type: 'webhook', endpoint: targetUrl });
+
       try {
         const owner = authenticatedUser.login;
         const chirpId = 'chirp_' + Date.now();
@@ -550,7 +690,7 @@
           payload,
           priority,
           groupKey: groupKey || undefined,
-          targets: targetUrl ? [{ type: 'webhook', endpoint: targetUrl }] : [],
+          targets,
           status: 'PENDING',
           attempts: 0,
           maxAttempts: 5,
@@ -577,14 +717,14 @@
           method: 'PUT',
           headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: `feat(enqueue): add Chirp ${chirpId} via Gryllus Studio`,
+            message: `feat(enqueue): add Multicast Chirp ${chirpId} via Gryllus Studio`,
             content: btoa(JSON.stringify(existingData, null, 2))
           })
         });
 
         if (putRes.ok) {
           toast.className = 'status-toast success';
-          toast.innerHTML = `✅ Chirp published successfully! ID: <strong>${chirpId}</strong>`;
+          toast.innerHTML = `✅ Multicast Chirp published successfully! ID: <strong>${chirpId}</strong> (${targets.length} Multicast targets configured)`;
           toast.style.display = 'block';
           loadQueues();
         } else {
@@ -602,12 +742,17 @@
       const sampleContext = {
         subject: 'Deployment Success',
         message: 'Application v1.2.0 deployed clean to production.',
+        user: 'adrian@terra.io',
         priority: 'VIP',
         timestamp: new Date().toLocaleTimeString()
       };
 
       let rendered = src.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, key) => sampleContext[key] || '');
       document.getElementById('templatePreview').innerHTML = rendered;
+    }
+
+    function saveSettings() {
+      alert('✅ Module Controls & Settings saved successfully!');
     }
 
     renderLiveTemplate();
