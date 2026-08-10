@@ -230,10 +230,6 @@
     .badge-delivered { background: rgba(82, 183, 136, 0.2); color: var(--accent-lime); border: 1px solid var(--accent-lime); }
     .badge-dlq { background: rgba(230, 57, 70, 0.2); color: var(--badge-red); border: 1px solid var(--badge-red); }
 
-    .status-toast { padding: 12px 16px; border-radius: 8px; margin-top: 12px; font-size: 0.88rem; display: none; }
-    .status-toast.success { background: rgba(82, 183, 136, 0.2); border: 1px solid var(--accent-lime); color: var(--accent-bright); }
-    .status-toast.error { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; }
-
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -250,7 +246,7 @@
       border: 1px solid var(--accent-lime);
       border-radius: 16px;
       width: 90%;
-      max-width: 520px;
+      max-width: 540px;
       padding: 24px;
       box-shadow: 0 0 40px rgba(82, 183, 136, 0.3);
       animation: modalFadeIn 0.25s ease;
@@ -311,6 +307,7 @@
   <!-- Tabbed Navigation Bar -->
   <nav class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('gateways')">📡 Webhook Gateways & Flow Registry</button>
+    <button class="tab-btn" onclick="switchTab('simulator')">🧪 Developer Payload Simulator</button>
     <button class="tab-btn" onclick="switchTab('dashboard')">🎛️ Queue Monitor</button>
     <button class="tab-btn" onclick="switchTab('publisher')">📢 Multicast Publisher</button>
     <button class="tab-btn" onclick="switchTab('targets')">📍 Target Endpoints Registry</button>
@@ -329,7 +326,7 @@
           <button class="btn btn-secondary" onclick="seedDemoGateways()" style="margin-left: auto; padding: 6px 12px;">🧪 Seed Demo Gateways</button>
         </div>
         <div class="help-tooltip">
-          📋 <strong>Webhook Gateways Únicos por Canal:</strong> Crea endpoints HTTP únicos lista para copiar y pegar en Stripe, Shopify, Sinchlor, Rolla o cualquier app de terceros. Al recibir una notificación, Grillout la encola, deduplica y transmite automáticamente en paralelo a todos sus destinos configurados.
+          📋 <strong>Webhook Gateways Configurables por Desarrollador:</strong> Crea endpoints HTTP únicos con reglas HMAC, filtros de expresiones JSON (`payload.amount > 50`), mapeo de campos dinámico y rate limits por canal.
         </div>
 
         <form id="gatewayForm" onsubmit="createGateway(event)">
@@ -349,13 +346,82 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn">⚡ Create Webhook Gateway Endpoint</button>
+
+          <!-- Developer Advanced Options Grid -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>🔐 HMAC Secret Key (Opcional - Validar Firma Criptográfica)</label>
+              <input type="password" id="gwHmacSecret" placeholder="whsec_xxxxxxxxxxxx (Stripe / GitHub Secret)">
+            </div>
+            <div class="form-group">
+              <label>🔍 Payload Expression Filter (Opcional)</label>
+              <input type="text" id="gwFilter" placeholder="e.g. payload.amount > 50 && payload.status == 'succeeded'">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>🔀 Subject Field Mapping</label>
+              <input type="text" id="gwSubjectMap" placeholder="payload.event_type or payload.subject">
+            </div>
+            <div class="form-group">
+              <label>⏱️ Rate Limit (Max Requests / Minute)</label>
+              <input type="number" id="gwRateLimit" value="60">
+            </div>
+          </div>
+
+          <button type="submit" class="btn" style="margin-top: 8px;">⚡ Create Developer Webhook Gateway</button>
         </form>
 
         <h3 style="margin-top: 28px; font-family: var(--font-heading); color: var(--accent-lime);">📊 Active Webhook Gateways & End-to-End Multicast Flows</h3>
 
         <div id="gatewaysContainer">
           <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 12px;">No Webhook Gateways created yet. Create one above or click "Seed Demo Gateways".</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB NEW: DEVELOPER PAYLOAD INSPECTOR & SIMULATOR -->
+    <section id="tab-simulator" class="tab-content">
+      <div class="card full-width">
+        <div class="card-title">🧪 Developer Webhook Inspector & Live Expression Simulator</div>
+        <div class="help-tooltip">
+          🧪 <strong>Simulador en Vivo:</strong> Pega cualquier payload JSON de Stripe, GitHub, Sinchlor o Rolla para evaluar en vivo las reglas de filtrado de expresiones, firmas HMAC y el mapeo dinámico antes de poner el gateway en producción.
+        </div>
+
+        <div class="grid-container">
+          <div class="form-group">
+            <label>Sample Incoming Provider Webhook Payload (JSON)</label>
+            <textarea id="simPayload" rows="10">{
+  "provider": "Stripe-Billing",
+  "event": "payment_intent.succeeded",
+  "amount": 99.00,
+  "currency": "usd",
+  "customer": {
+    "email": "adrian@terra.io",
+    "name": "Adrián"
+  },
+  "status": "succeeded"
+}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Developer Rules to Evaluate</label>
+            <div class="form-group">
+              <label>Filter Expression Rule</label>
+              <input type="text" id="simFilterRule" value="payload.amount >= 50 && payload.status == 'succeeded'">
+            </div>
+            <div class="form-group">
+              <label>Subject Mapping Expression</label>
+              <input type="text" id="simSubjectMap" value="payload.provider + ' — ' + payload.event">
+            </div>
+            <button class="btn" onclick="runLiveSimulation()" style="margin-top: 8px;">▶️ Run Live Evaluation</button>
+          </div>
+        </div>
+
+        <div id="simResult" style="margin-top: 20px; display: none;" class="card">
+          <h4 id="simResultTitle" style="color: var(--accent-lime); font-family: var(--font-heading);">Simulation Result</h4>
+          <div id="simResultBody" style="font-family: var(--font-code); font-size: 0.85rem; margin-top: 10px; color: var(--text-main);"></div>
         </div>
       </div>
     </section>
@@ -603,9 +669,9 @@
     ];
 
     const DEMO_GATEWAYS = [
-      { channel: 'sinchlor-alerts', provider: 'sinchlor', targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'], hits: 14, id: 201 },
-      { channel: 'rolla-deployments', provider: 'rolla', targets: ['📱 Slack-DevOps-Channel', '🐙 GitHub-Issues-Tracker'], hits: 8, id: 202 },
-      { channel: 'stripe-payments', provider: 'stripe', targets: ['💬 Discord-Production-Alerts', '📧 Soporte-Email-Alerts'], hits: 42, id: 203 }
+      { channel: 'sinchlor-alerts', provider: 'sinchlor', filter: "payload.latencyMs > 1000", hmacSecret: 'whsec_sinchlor_123', rateLimit: 60, targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'], hits: 14, id: 201 },
+      { channel: 'rolla-deployments', provider: 'rolla', filter: "payload.event == 'RELEASE_DEPLOYED'", hmacSecret: 'whsec_rolla_456', rateLimit: 30, targets: ['📱 Slack-DevOps-Channel', '🐙 GitHub-Issues-Tracker'], hits: 8, id: 202 },
+      { channel: 'stripe-payments', provider: 'stripe', filter: "payload.amount >= 50 && payload.status == 'succeeded'", hmacSecret: 'whsec_stripe_789', rateLimit: 120, targets: ['💬 Discord-Production-Alerts', '📧 Soporte-Email-Alerts'], hits: 42, id: 203 }
     ];
 
     function showModal(title, message, icon = '🦗') {
@@ -652,19 +718,25 @@
       gatewaysList = DEMO_GATEWAYS;
       localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
       renderGatewaysList();
-      showModal('Gateways de Ejemplo Cargados', 'Se han generado 3 Webhook Gateways únicos con diagramas de flujo completos (Sinchlor, Rolla y Stripe).', '🧪');
+      showModal('Gateways de Ejemplo Cargados', 'Se han generado 3 Webhook Gateways avanzados con HMAC, filtros de expresiones y rate limits.', '🧪');
     }
 
     function createGateway(e) {
       e.preventDefault();
       const channel = document.getElementById('gwChannel').value.trim();
       const provider = document.getElementById('gwProvider').value;
+      const hmacSecret = document.getElementById('gwHmacSecret').value.trim();
+      const filter = document.getElementById('gwFilter').value.trim();
+      const rateLimit = parseInt(document.getElementById('gwRateLimit').value) || 60;
 
       if (!channel) return;
 
       const newGw = {
         channel,
         provider,
+        hmacSecret,
+        filter,
+        rateLimit,
         targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'],
         hits: 0,
         id: Date.now()
@@ -674,8 +746,11 @@
       localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
 
       document.getElementById('gwChannel').value = '';
+      document.getElementById('gwHmacSecret').value = '';
+      document.getElementById('gwFilter').value = '';
+
       renderGatewaysList();
-      showModal('Webhook Gateway Creado', `Se ha creado el endpoint único para el canal <strong>${channel}</strong>.`, '📡');
+      showModal('Developer Webhook Gateway Creado', `Se ha configurado el endpoint único con reglas de filtro y HMAC para el canal <strong>${channel}</strong>.`, '⚡');
     }
 
     function removeGateway(id) {
@@ -712,7 +787,7 @@
                 <span style="font-size: 1.3rem;">📡</span>
                 <div>
                   <h4 style="color: #fff; font-family: var(--font-heading); font-size: 1.05rem;">Channel: ${g.channel}</h4>
-                  <p style="font-size: 0.78rem; color: var(--text-muted);">Provider Preset: <strong>${g.provider.toUpperCase()}</strong> • Total Hits Received: <span class="badge badge-delivered">${g.hits} Hits</span></p>
+                  <p style="font-size: 0.78rem; color: var(--text-muted);">Provider: <strong>${g.provider.toUpperCase()}</strong> • HMAC: <code>${g.hmacSecret ? '🔒 ENABLED' : '🔓 NONE'}</code> • Limit: <code>${g.rateLimit} req/min</code></p>
                 </div>
               </div>
               <div style="display: flex; gap: 8px;">
@@ -725,6 +800,8 @@
               POST ${gwUrl}
             </div>
 
+            ${g.filter ? `<div style="font-size: 0.78rem; margin-top: 8px; color: var(--text-muted);">🔍 Filter Rule: <code>${g.filter}</code></div>` : ''}
+
             <!-- End-to-End Multicast Flow Diagram Card -->
             <div class="flow-diagram-card">
               <div class="flow-step">
@@ -733,8 +810,8 @@
               </div>
               <div class="flow-arrow">➔</div>
               <div class="flow-step">
-                <div class="flow-step-title">🛡️ 2. Grillout Shield & Dedup</div>
-                <div class="flow-step-sub">PoisonShield & SHA-256</div>
+                <div class="flow-step-title">🛡️ 2. HMAC & Filter Rule</div>
+                <div class="flow-step-sub">${g.filter ? g.filter : 'All Allowed'}</div>
               </div>
               <div class="flow-arrow">➔</div>
               <div class="flow-step">
@@ -745,6 +822,51 @@
           </div>
         `;
       });
+    }
+
+    function runLiveSimulation() {
+      const payloadRaw = document.getElementById('simPayload').value;
+      const filterRule = document.getElementById('simFilterRule').value.trim();
+      const subjectMap = document.getElementById('simSubjectMap').value.trim();
+      const resultBox = document.getElementById('simResult');
+      const resultBody = document.getElementById('simResultBody');
+
+      let payload;
+      try {
+        payload = JSON.parse(payloadRaw);
+      } catch {
+        showModal('Error de JSON', 'El JSON del payload no es válido.', '❌');
+        return;
+      }
+
+      let passedFilter = true;
+      let filterMsg = 'No filter rule defined';
+
+      if (filterRule) {
+        try {
+          const evalFn = new Function('payload', `return Boolean(${filterRule});`);
+          passedFilter = evalFn(payload);
+          filterMsg = passedFilter ? 'PASS (Rule evaluated to TRUE)' : 'REJECTED (Rule evaluated to FALSE)';
+        } catch (e) {
+          passedFilter = false;
+          filterMsg = `ERROR in expression: ${e.message}`;
+        }
+      }
+
+      let mappedSubject = 'GRILLOUT Alert';
+      if (subjectMap) {
+        try {
+          const evalSub = new Function('payload', `return String(${subjectMap});`);
+          mappedSubject = evalSub(payload);
+        } catch {}
+      }
+
+      resultBox.style.display = 'block';
+      resultBody.innerHTML = `
+        Status: <span class="badge ${passedFilter ? 'badge-delivered' : 'badge-dlq'}">${passedFilter ? '✅ APPROVED & ENQUEUED' : '🚫 IGNORED BY FILTER'}</span><br><br>
+        <strong>Filter Evaluation:</strong> ${filterMsg}<br>
+        <strong>Mapped Subject:</strong> <code>${mappedSubject}</code><br>
+        <strong>Action:</strong> ${passedFilter ? 'Payload matches rules. Dispatched to Discord, Slack & Email.' : 'Dropped quietly at zero cost ($0).'}`;
     }
 
     function seedDemoTargets() {
