@@ -84,6 +84,7 @@
       padding: 0 32px;
       display: flex;
       gap: 8px;
+      overflow-x: auto;
     }
 
     .tab-btn {
@@ -91,14 +92,15 @@
       border: none;
       border-bottom: 3px solid transparent;
       color: var(--text-muted);
-      padding: 14px 20px;
+      padding: 14px 18px;
       font-family: var(--font-heading);
       font-weight: 600;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap;
       transition: all 0.2s ease;
     }
 
@@ -119,6 +121,7 @@
       border-radius: 14px;
       padding: 24px;
       box-shadow: var(--shadow-glow);
+      margin-bottom: 24px;
     }
 
     .card-title {
@@ -137,7 +140,7 @@
       font-weight: normal;
       color: var(--text-muted);
       background: rgba(0, 0, 0, 0.3);
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 6px;
       border-left: 3px solid var(--accent-lime);
       margin-bottom: 16px;
@@ -166,8 +169,6 @@
       box-shadow: 0 0 10px rgba(82, 183, 136, 0.25);
     }
 
-    .switch-group { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(11, 25, 16, 0.6); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; }
-
     .btn {
       background: linear-gradient(135deg, var(--accent-forest), var(--border-accent));
       border: 1px solid var(--accent-lime);
@@ -188,33 +189,35 @@
     .btn-secondary { background: rgba(255, 255, 255, 0.05); border-color: var(--border-color); color: var(--text-muted); }
     .btn-danger { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; padding: 4px 12px; font-size: 0.78rem; border-radius: 20px; }
 
-    /* Target Chips Container */
-    .target-chips {
+    /* End-to-End Flow Card Styling */
+    .flow-diagram-card {
+      background: rgba(11, 25, 16, 0.9);
+      border: 1px dashed var(--accent-lime);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 14px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .chip {
-      background: rgba(27, 67, 50, 0.8);
-      border: 1px solid var(--accent-lime);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 0.78rem;
-      color: var(--text-main);
-      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      gap: 12px;
     }
 
-    .chip-remove {
-      cursor: pointer;
-      font-weight: bold;
-      color: var(--badge-red);
-      font-size: 0.9rem;
+    .flow-step {
+      background: rgba(27, 67, 50, 0.7);
+      border: 1px solid var(--border-accent);
+      border-radius: 8px;
+      padding: 10px 14px;
+      text-align: center;
+      flex: 1;
     }
 
+    .flow-step-title { font-weight: 700; font-size: 0.85rem; color: #fff; }
+    .flow-step-sub { font-size: 0.72rem; color: var(--accent-lime); font-family: var(--font-code); margin-top: 2px; }
+    .flow-arrow { color: var(--accent-lime); font-size: 1.2rem; font-weight: bold; }
+
+    .target-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .chip { background: rgba(27, 67, 50, 0.8); border: 1px solid var(--accent-lime); border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; color: var(--text-main); display: inline-flex; align-items: center; gap: 6px; }
+    .chip-remove { cursor: pointer; font-weight: bold; color: var(--badge-red); font-size: 0.9rem; }
     .chip-remove:hover { color: #fff; }
 
     table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.88rem; }
@@ -247,7 +250,7 @@
       border: 1px solid var(--accent-lime);
       border-radius: 16px;
       width: 90%;
-      max-width: 480px;
+      max-width: 520px;
       padding: 24px;
       box-shadow: 0 0 40px rgba(82, 183, 136, 0.3);
       animation: modalFadeIn 0.25s ease;
@@ -307,7 +310,8 @@
 
   <!-- Tabbed Navigation Bar -->
   <nav class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('dashboard')">🎛️ Queue Monitor</button>
+    <button class="tab-btn active" onclick="switchTab('gateways')">📡 Webhook Gateways & Flow Registry</button>
+    <button class="tab-btn" onclick="switchTab('dashboard')">🎛️ Queue Monitor</button>
     <button class="tab-btn" onclick="switchTab('publisher')">📢 Multicast Publisher</button>
     <button class="tab-btn" onclick="switchTab('targets')">📍 Target Endpoints Registry</button>
     <button class="tab-btn" onclick="switchTab('settings')">⚙️ Module Controls & Settings</button>
@@ -317,8 +321,47 @@
 
   <main>
 
+    <!-- TAB 0: WEBHOOK GATEWAYS & END-TO-END FLOW REGISTRY -->
+    <section id="tab-gateways" class="tab-content active">
+      <div class="card full-width">
+        <div class="card-title">
+          <span>📡 Webhook Gateway URLs & Multicast Flow Registry ($0 Infrastructure)</span>
+          <button class="btn btn-secondary" onclick="seedDemoGateways()" style="margin-left: auto; padding: 6px 12px;">🧪 Seed Demo Gateways</button>
+        </div>
+        <div class="help-tooltip">
+          📋 <strong>Webhook Gateways Únicos por Canal:</strong> Crea endpoints HTTP únicos lista para copiar y pegar en Stripe, Shopify, Sinchlor, Rolla o cualquier app de terceros. Al recibir una notificación, Grillout la encola, deduplica y transmite automáticamente en paralelo a todos sus destinos configurados.
+        </div>
+
+        <form id="gatewayForm" onsubmit="createGateway(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gateway Name / Channel Topic</label>
+              <input type="text" id="gwChannel" placeholder="e.g. sinchlor-alerts or stripe-payments" required>
+            </div>
+            <div class="form-group">
+              <label>Provider Preset</label>
+              <select id="gwProvider">
+                <option value="sinchlor">🔌 Sinchlor Microservices (Terra)</option>
+                <option value="rolla">📦 Rolla Deployments (Terra)</option>
+                <option value="stripe">💳 Stripe Payments</option>
+                <option value="github">🐙 GitHub Actions / Webhooks</option>
+                <option value="custom">🌐 Custom HTTP Webhook Provider</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn">⚡ Create Webhook Gateway Endpoint</button>
+        </form>
+
+        <h3 style="margin-top: 28px; font-family: var(--font-heading); color: var(--accent-lime);">📊 Active Webhook Gateways & End-to-End Multicast Flows</h3>
+
+        <div id="gatewaysContainer">
+          <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 12px;">No Webhook Gateways created yet. Create one above or click "Seed Demo Gateways".</p>
+        </div>
+      </div>
+    </section>
+
     <!-- TAB 1: DASHBOARD & QUEUE MONITOR -->
-    <section id="tab-dashboard" class="tab-content active">
+    <section id="tab-dashboard" class="tab-content">
       <div class="card full-width">
         <div class="card-title">
           <span>🦗 Active Stridulation Channels & Queue Monitor</span>
@@ -548,6 +591,7 @@
     let pat = localStorage.getItem('GRILLOUT_PAT') || '';
     let authenticatedUser = null;
     let targetRegistry = JSON.parse(localStorage.getItem('GRILLOUT_TARGETS') || '[]');
+    let gatewaysList = JSON.parse(localStorage.getItem('GRILLOUT_GATEWAYS') || '[]');
 
     const DEMO_TARGETS = [
       { alias: '💬 Discord-Production-Alerts', type: 'discord', endpoint: 'https://discord.com/api/webhooks/1234567890/demo_discord_webhook_token', id: 101 },
@@ -556,6 +600,12 @@
       { alias: '🌐 API-Gateway-Events-Webhook', type: 'webhook', endpoint: 'https://api.empresa.com/v1/events/webhook', id: 104 },
       { alias: '📧 Soporte-Email-Alerts', type: 'email', endpoint: 'soporte@empresa.com', id: 105 },
       { alias: '🐙 GitHub-Issues-Tracker', type: 'github_issue', endpoint: 'amglogicalis/Terra', id: 106 }
+    ];
+
+    const DEMO_GATEWAYS = [
+      { channel: 'sinchlor-alerts', provider: 'sinchlor', targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'], hits: 14, id: 201 },
+      { channel: 'rolla-deployments', provider: 'rolla', targets: ['📱 Slack-DevOps-Channel', '🐙 GitHub-Issues-Tracker'], hits: 8, id: 202 },
+      { channel: 'stripe-payments', provider: 'stripe', targets: ['💬 Discord-Production-Alerts', '📧 Soporte-Email-Alerts'], hits: 42, id: 203 }
     ];
 
     function showModal(title, message, icon = '🦗') {
@@ -582,7 +632,13 @@
         targetRegistry = DEMO_TARGETS;
         localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
       }
+      if (gatewaysList.length === 0) {
+        gatewaysList = DEMO_GATEWAYS;
+        localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
+      }
+
       renderTargetsList();
+      renderGatewaysList();
 
       if (pat) {
         document.getElementById('githubPat').value = pat;
@@ -590,6 +646,105 @@
       } else {
         showDisconnected();
       }
+    }
+
+    function seedDemoGateways() {
+      gatewaysList = DEMO_GATEWAYS;
+      localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
+      renderGatewaysList();
+      showModal('Gateways de Ejemplo Cargados', 'Se han generado 3 Webhook Gateways únicos con diagramas de flujo completos (Sinchlor, Rolla y Stripe).', '🧪');
+    }
+
+    function createGateway(e) {
+      e.preventDefault();
+      const channel = document.getElementById('gwChannel').value.trim();
+      const provider = document.getElementById('gwProvider').value;
+
+      if (!channel) return;
+
+      const newGw = {
+        channel,
+        provider,
+        targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'],
+        hits: 0,
+        id: Date.now()
+      };
+
+      gatewaysList.push(newGw);
+      localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
+
+      document.getElementById('gwChannel').value = '';
+      renderGatewaysList();
+      showModal('Webhook Gateway Creado', `Se ha creado el endpoint único para el canal <strong>${channel}</strong>.`, '📡');
+    }
+
+    function removeGateway(id) {
+      gatewaysList = gatewaysList.filter(g => g.id !== id);
+      localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
+      renderGatewaysList();
+      showModal('Gateway Eliminado', 'Se ha eliminado el Webhook Gateway del registro.', '🗑️');
+    }
+
+    function copyGatewayUrl(channel) {
+      const owner = authenticatedUser ? authenticatedUser.login : 'amglogicalis';
+      const url = `https://api.github.com/repos/${owner}/.grillout-storage/dispatches?channel=${channel}`;
+      navigator.clipboard.writeText(url);
+      showModal('URL Copiada al Portapapeles', `Webhook Gateway URL para <strong>${channel}</strong>:<br><code style="word-break: break-all;">${url}</code>`, '📋');
+    }
+
+    function renderGatewaysList() {
+      const container = document.getElementById('gatewaysContainer');
+      const owner = authenticatedUser ? authenticatedUser.login : 'amglogicalis';
+
+      if (gatewaysList.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 12px;">No Webhook Gateways created yet. Create one above or click "Seed Demo Gateways".</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      gatewaysList.forEach(g => {
+        const gwUrl = `https://api.github.com/repos/${owner}/.grillout-storage/dispatches?channel=${g.channel}`;
+
+        container.innerHTML += `
+          <div class="card" style="border: 1px solid var(--border-accent); background: rgba(15, 36, 23, 0.7);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.3rem;">📡</span>
+                <div>
+                  <h4 style="color: #fff; font-family: var(--font-heading); font-size: 1.05rem;">Channel: ${g.channel}</h4>
+                  <p style="font-size: 0.78rem; color: var(--text-muted);">Provider Preset: <strong>${g.provider.toUpperCase()}</strong> • Total Hits Received: <span class="badge badge-delivered">${g.hits} Hits</span></p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn" onclick="copyGatewayUrl('${g.channel}')" style="padding: 6px 12px; font-size: 0.8rem;">📋 Copy Webhook URL</button>
+                <button class="btn btn-danger" onclick="removeGateway(${g.id})">Delete</button>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; background: rgba(0, 0, 0, 0.4); padding: 8px 12px; border-radius: 6px; font-family: var(--font-code); font-size: 0.78rem; color: var(--accent-lime); word-break: break-all;">
+              POST ${gwUrl}
+            </div>
+
+            <!-- End-to-End Multicast Flow Diagram Card -->
+            <div class="flow-diagram-card">
+              <div class="flow-step">
+                <div class="flow-step-title">📥 1. Webhook Provider</div>
+                <div class="flow-step-sub">${g.provider.toUpperCase()} Payload</div>
+              </div>
+              <div class="flow-arrow">➔</div>
+              <div class="flow-step">
+                <div class="flow-step-title">🛡️ 2. Grillout Shield & Dedup</div>
+                <div class="flow-step-sub">PoisonShield & SHA-256</div>
+              </div>
+              <div class="flow-arrow">➔</div>
+              <div class="flow-step">
+                <div class="flow-step-title">📢 3. Multicast Fanout</div>
+                <div class="flow-step-sub">${g.targets.join(' • ')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
     }
 
     function seedDemoTargets() {
@@ -645,6 +800,7 @@
           showModal('Conexión Exitosa', `Autenticado correctamente como <strong>@${user.login}</strong> en el enjambre Grillout.`, '✅');
         }
 
+        renderGatewaysList();
         loadQueues();
       } catch (err) {
         if (isExplicitClick) {
