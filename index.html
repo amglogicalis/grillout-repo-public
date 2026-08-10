@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gryllus Studio — GRILLOUT 🦗 | Terra Ecosystem</title>
+  <link rel="icon" type="image/png" href="assets/logo_grillout.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -84,6 +85,42 @@
       gap: 12px;
     }
 
+    .hidden { display: none !important; }
+
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(27, 67, 50, 0.6);
+      border: 1px solid var(--border-accent);
+      border-radius: 30px;
+      padding: 6px 16px 6px 8px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-lime);
+      object-fit: cover;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-handle {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #ffffff;
+    }
+
+    .user-status {
+      font-size: 0.72rem;
+      color: var(--accent-lime);
+    }
+
     input[type="text"], input[type="password"], textarea, select {
       background: rgba(11, 25, 16, 0.8);
       border: 1px solid var(--border-color);
@@ -131,6 +168,20 @@
 
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: rgba(230, 57, 70, 0.2);
+      border: 1px solid var(--badge-red);
+      color: #ff85a1;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+    }
+
+    .btn-danger:hover {
+      background: var(--badge-red);
       color: #fff;
     }
 
@@ -227,18 +278,6 @@
     .badge-delivered { background: rgba(82, 183, 136, 0.2); color: var(--accent-lime); border: 1px solid var(--accent-lime); }
     .badge-dlq { background: rgba(230, 57, 70, 0.2); color: var(--badge-red); border: 1px solid var(--badge-red); }
 
-    .code-preview {
-      background: #07120b;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 14px;
-      font-family: var(--font-code);
-      font-size: 0.84rem;
-      color: #b7e4c7;
-      overflow-x: auto;
-      white-space: pre-wrap;
-    }
-
     .status-toast {
       padding: 12px 16px;
       border-radius: 8px;
@@ -261,9 +300,21 @@
         <p>GRILLOUT 🦗 — Ephemeral Async Queues & Multicast Fanout ($0)</p>
       </div>
     </div>
-    <div class="auth-bar">
-      <input type="password" id="githubPat" placeholder="GitHub PAT (ghp_...)" style="width: 260px;">
+
+    <!-- Disconnected Form -->
+    <div id="authDisconnected" class="auth-bar">
+      <input type="password" id="githubPat" placeholder="GitHub PAT (ghp_...)" style="width: 260px;" onkeyup="if(event.key==='Enter') savePat()">
       <button class="btn" onclick="savePat()">🔑 Authenticate</button>
+    </div>
+
+    <!-- Connected User Profile Badge -->
+    <div id="authConnected" class="user-profile-badge hidden">
+      <img id="userAvatar" src="assets/logo_grillout.png" alt="User Avatar" class="user-avatar">
+      <div class="user-info">
+        <span id="userHandle" class="user-handle">@username</span>
+        <span class="user-status">🟢 Connected</span>
+      </div>
+      <button class="btn btn-danger" onclick="logout()">🚪 Disconnect</button>
     </div>
   </header>
 
@@ -288,7 +339,7 @@
           </thead>
           <tbody id="queuesBody">
             <tr>
-              <td colspan="5" style="text-align: center; color: var(--text-muted);">Configure GitHub PAT to load active queues.</td>
+              <td colspan="5" style="text-align: center; color: var(--text-muted);">Authenticate with your GitHub PAT to load active queues.</td>
             </tr>
           </tbody>
         </table>
@@ -364,29 +415,80 @@
 
   <script>
     let pat = localStorage.getItem('GRILLOUT_PAT') || '';
-    if (pat) document.getElementById('githubPat').value = pat;
+    let authenticatedUser = null;
 
-    function savePat() {
-      pat = document.getElementById('githubPat').value.trim();
+    async function initAuth() {
+      if (pat) {
+        document.getElementById('githubPat').value = pat;
+        await validateAndShowProfile();
+      } else {
+        showDisconnected();
+      }
+    }
+
+    async function savePat() {
+      const inputPat = document.getElementById('githubPat').value.trim();
+      if (!inputPat) {
+        alert('Please enter a valid GitHub PAT.');
+        return;
+      }
+      pat = inputPat;
       localStorage.setItem('GRILLOUT_PAT', pat);
-      alert('✅ GitHub PAT saved in localStorage!');
-      loadQueues();
+      await validateAndShowProfile();
+    }
+
+    function logout() {
+      pat = '';
+      authenticatedUser = null;
+      localStorage.removeItem('GRILLOUT_PAT');
+      document.getElementById('githubPat').value = '';
+      showDisconnected();
+      const tbody = document.getElementById('queuesBody');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Authenticate with your GitHub PAT to load active queues.</td></tr>';
+    }
+
+    function showDisconnected() {
+      document.getElementById('authDisconnected').classList.remove('hidden');
+      document.getElementById('authConnected').classList.add('hidden');
+    }
+
+    async function validateAndShowProfile() {
+      try {
+        const res = await fetch('https://api.github.com/user', {
+          headers: { Authorization: `Bearer ${pat}` }
+        });
+
+        if (!res.ok) throw new Error('Invalid PAT token or revoked access');
+
+        const user = await res.json();
+        authenticatedUser = user;
+
+        document.getElementById('userAvatar').src = user.avatar_url || 'assets/logo_grillout.png';
+        document.getElementById('userHandle').textContent = `@${user.login}`;
+
+        document.getElementById('authDisconnected').classList.add('hidden');
+        document.getElementById('authConnected').classList.remove('hidden');
+
+        loadQueues();
+      } catch (err) {
+        alert(`Authentication Failed: ${err.message}`);
+        logout();
+      }
     }
 
     async function loadQueues() {
-      if (!pat) return;
+      if (!pat || !authenticatedUser) return;
       const tbody = document.getElementById('queuesBody');
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading storage vault...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading storage vault from GitHub...</td></tr>';
 
       try {
-        // Query storage repo files via GitHub API
-        const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `Bearer ${pat}` } });
-        const user = await userRes.json();
-        const owner = user.login;
+        const owner = authenticatedUser.login;
+        const filesRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/queues`, {
+          headers: { Authorization: `Bearer ${pat}` }
+        });
 
-        const filesRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/queues`, { headers: { Authorization: `Bearer ${pat}` } });
         if (!filesRes.ok) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--badge-yellow);">No queues created yet in .grillout-storage. Publish a Chirp to initialize.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--badge-yellow);">No queues created yet in .grillout-storage. Publish a Chirp below to initialize your first queue.</td></tr>';
           return;
         }
 
@@ -421,7 +523,7 @@
       const toast = document.getElementById('pubToast');
       toast.style.display = 'none';
 
-      if (!pat) {
+      if (!pat || !authenticatedUser) {
         alert('Please authenticate with GitHub PAT first.');
         return;
       }
@@ -440,10 +542,7 @@
       }
 
       try {
-        const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `Bearer ${pat}` } });
-        const user = await userRes.json();
-        const owner = user.login;
-
+        const owner = authenticatedUser.login;
         const chirpId = 'chirp_' + Date.now();
         const newChirp = {
           id: chirpId,
@@ -458,12 +557,13 @@
           createdAt: new Date().toISOString()
         };
 
-        // Write directly to .grillout-storage repo via Git Contents API
         const queueFile = `queues/${channel}.json`;
         let existingData = { chirps: [] };
 
         try {
-          const getRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, { headers: { Authorization: `Bearer ${pat}` } });
+          const getRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, {
+            headers: { Authorization: `Bearer ${pat}` }
+          });
           if (getRes.ok) {
             const fileData = await getRes.json();
             const decoded = atob(fileData.content.replace(/\n/g, ''));
@@ -511,7 +611,7 @@
     }
 
     renderLiveTemplate();
-    if (pat) loadQueues();
+    initAuth();
   </script>
 
 </body>
