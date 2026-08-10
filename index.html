@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gryllus Studio — GRILLOUT 🦗 | Terra Ecosystem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0b1910;
+      --bg-card: rgba(20, 56, 35, 0.55);
+      --bg-card-hover: rgba(27, 67, 50, 0.75);
+      --border-color: rgba(45, 106, 79, 0.4);
+      --border-accent: #2d6a4f;
+      --text-main: #e2f0d9;
+      --text-muted: #95d5b2;
+      --accent-lime: #52b788;
+      --accent-forest: #1b4332;
+      --accent-bright: #74c69d;
+      --badge-red: #e63946;
+      --badge-yellow: #ffb703;
+      --shadow-glow: 0 0 25px rgba(82, 183, 136, 0.15);
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-code: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(45, 106, 79, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(82, 183, 136, 0.12) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: rgba(15, 36, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand img {
+      height: 42px;
+      width: auto;
+      filter: drop-shadow(0 0 8px rgba(82, 183, 136, 0.4));
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-text p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .auth-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    input[type="text"], input[type="password"], textarea, select {
+      background: rgba(11, 25, 16, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--font-body);
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+      border-color: var(--accent-lime);
+      box-shadow: 0 0 10px rgba(82, 183, 136, 0.25);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent-forest), var(--border-accent));
+      border: 1px solid var(--accent-lime);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: linear-gradient(135deg, var(--border-accent), var(--accent-lime));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(82, 183, 136, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-color);
+      color: var(--text-muted);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    main {
+      max-width: 1300px;
+      margin: 32px auto;
+      padding: 0 24px;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .full-width { grid-column: span 2; }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--accent-lime);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-row > * { flex: 1; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: rgba(15, 36, 23, 0.9);
+      color: var(--accent-lime);
+      text-align: left;
+      padding: 12px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(45, 106, 79, 0.2);
+    }
+
+    tr:hover td {
+      background: rgba(82, 183, 136, 0.05);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: var(--font-code);
+    }
+
+    .badge-pending { background: rgba(255, 183, 3, 0.2); color: var(--badge-yellow); border: 1px solid var(--badge-yellow); }
+    .badge-delivered { background: rgba(82, 183, 136, 0.2); color: var(--accent-lime); border: 1px solid var(--accent-lime); }
+    .badge-dlq { background: rgba(230, 57, 70, 0.2); color: var(--badge-red); border: 1px solid var(--badge-red); }
+
+    .code-preview {
+      background: #07120b;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.84rem;
+      color: #b7e4c7;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .status-toast {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 0.88rem;
+      display: none;
+    }
+
+    .status-toast.success { background: rgba(82, 183, 136, 0.2); border: 1px solid var(--accent-lime); color: var(--accent-bright); }
+    .status-toast.error { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <img src="assets/logo_grillout.png" alt="Grillout Logo" onerror="this.src='../.terra/assets/logo_grillout.png'">
+      <div class="brand-text">
+        <h1>Gryllus Studio</h1>
+        <p>GRILLOUT 🦗 — Ephemeral Async Queues & Multicast Fanout ($0)</p>
+      </div>
+    </div>
+    <div class="auth-bar">
+      <input type="password" id="githubPat" placeholder="GitHub PAT (ghp_...)" style="width: 260px;">
+      <button class="btn" onclick="savePat()">🔑 Authenticate</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid-container">
+
+      <!-- Active Queues Monitor -->
+      <div class="card full-width">
+        <div class="card-title">
+          <span>🦗 Active Stridulation Channels & Queue Monitor</span>
+          <button class="btn btn-secondary" onclick="loadQueues()" style="margin-left: auto; padding: 6px 12px;">🔄 Refresh</button>
+        </div>
+        <table id="queuesTable">
+          <thead>
+            <tr>
+              <th>Channel Name</th>
+              <th>Pending Chirps</th>
+              <th>DLQ Items</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="queuesBody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted);">Configure GitHub PAT to load active queues.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Chirp Publisher Playground -->
+      <div class="card">
+        <div class="card-title">🚀 Publish Multicast Chirp</div>
+        <form id="pubForm" onsubmit="publishChirp(event)">
+          <div class="form-group">
+            <label>Target Channel</label>
+            <input type="text" id="pubChannel" placeholder="e.g. user-onboarding" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Priority</label>
+              <select id="pubPriority">
+                <option value="NORMAL">NORMAL</option>
+                <option value="VIP">VIP</option>
+                <option value="CRITICAL">CRITICAL</option>
+                <option value="LOW">LOW</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>FIFO GroupKey</label>
+              <input type="text" id="pubGroupKey" placeholder="e.g. user_99">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>JSON Payload</label>
+            <textarea id="pubPayload" rows="4" placeholder='{"subject": "Welcome!", "message": "Hello World", "userId": 123}' required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Multicast Target Endpoint (Optional)</label>
+            <input type="text" id="pubTargetUrl" placeholder="https://discord.com/api/webhooks/... or https://hooks.slack.com/...">
+          </div>
+          <button type="submit" class="btn" style="width: 100%;">📢 Publish Chirp</button>
+        </form>
+        <div id="pubToast" class="status-toast"></div>
+      </div>
+
+      <!-- Template Synthesizer Studio -->
+      <div class="card">
+        <div class="card-title">🎨 Gryllus Template Synthesizer</div>
+        <div class="form-group">
+          <label>Template Code (HTML / Markdown with {{variable}})</label>
+          <textarea id="templateSource" rows="6" oninput="renderLiveTemplate()"><div style="font-family: sans-serif; background: #0f2417; color: #e2f0d9; padding: 16px; border-radius: 8px;">
+  <h3 style="color: #52b788;">📢 Alert: {{subject}}</h3>
+  <p>{{message}}</p>
+  <small>Priority: {{priority}} • Sent at {{timestamp}}</small>
+</div></textarea>
+        </div>
+        <div class="form-group">
+          <label>Live Preview</label>
+          <div id="templatePreview" style="background: #07120b; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; min-height: 120px;"></div>
+        </div>
+      </div>
+
+      <!-- DLQ & Forensic Replay Vault -->
+      <div class="card full-width">
+        <div class="card-title">🔄 Dead-Letter Queue (DLQ) & Forensic Replay</div>
+        <div class="form-row">
+          <input type="text" id="dlqChannelInput" placeholder="Channel Name (e.g. user-onboarding)">
+          <button class="btn btn-secondary" onclick="loadDlq()">🔍 Inspect DLQ</button>
+        </div>
+        <div id="dlqResults" style="margin-top: 16px;">
+          <p style="color: var(--text-muted); font-size: 0.88rem;">Select a channel to inspect quarantined or failed messages.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    let pat = localStorage.getItem('GRILLOUT_PAT') || '';
+    if (pat) document.getElementById('githubPat').value = pat;
+
+    function savePat() {
+      pat = document.getElementById('githubPat').value.trim();
+      localStorage.setItem('GRILLOUT_PAT', pat);
+      alert('✅ GitHub PAT saved in localStorage!');
+      loadQueues();
+    }
+
+    async function loadQueues() {
+      if (!pat) return;
+      const tbody = document.getElementById('queuesBody');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading storage vault...</td></tr>';
+
+      try {
+        // Query storage repo files via GitHub API
+        const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `Bearer ${pat}` } });
+        const user = await userRes.json();
+        const owner = user.login;
+
+        const filesRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/queues`, { headers: { Authorization: `Bearer ${pat}` } });
+        if (!filesRes.ok) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--badge-yellow);">No queues created yet in .grillout-storage. Publish a Chirp to initialize.</td></tr>';
+          return;
+        }
+
+        const files = await filesRes.json();
+        const channels = new Set();
+        files.forEach(f => {
+          const name = f.name.replace('_dlq.json', '').replace('.json', '');
+          channels.add(name);
+        });
+
+        tbody.innerHTML = '';
+        channels.forEach(ch => {
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${ch}</strong></td>
+              <td><span class="badge badge-pending">Active</span></td>
+              <td><span class="badge badge-dlq">0 DLQ</span></td>
+              <td><span class="badge badge-delivered">Operational</span></td>
+              <td>
+                <button class="btn btn-secondary" onclick="triggerConsume('${ch}')" style="padding: 4px 8px; font-size: 0.78rem;">⚡ Consume Batch</button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--badge-red);">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function publishChirp(e) {
+      e.preventDefault();
+      const toast = document.getElementById('pubToast');
+      toast.style.display = 'none';
+
+      if (!pat) {
+        alert('Please authenticate with GitHub PAT first.');
+        return;
+      }
+
+      const channel = document.getElementById('pubChannel').value.trim();
+      const priority = document.getElementById('pubPriority').value;
+      const groupKey = document.getElementById('pubGroupKey').value.trim();
+      const targetUrl = document.getElementById('pubTargetUrl').value.trim();
+      let payload;
+
+      try {
+        payload = JSON.parse(document.getElementById('pubPayload').value);
+      } catch {
+        alert('Invalid JSON Payload!');
+        return;
+      }
+
+      try {
+        const userRes = await fetch('https://api.github.com/user', { headers: { Authorization: `Bearer ${pat}` } });
+        const user = await userRes.json();
+        const owner = user.login;
+
+        const chirpId = 'chirp_' + Date.now();
+        const newChirp = {
+          id: chirpId,
+          channel,
+          payload,
+          priority,
+          groupKey: groupKey || undefined,
+          targets: targetUrl ? [{ type: 'webhook', endpoint: targetUrl }] : [],
+          status: 'PENDING',
+          attempts: 0,
+          maxAttempts: 5,
+          createdAt: new Date().toISOString()
+        };
+
+        // Write directly to .grillout-storage repo via Git Contents API
+        const queueFile = `queues/${channel}.json`;
+        let existingData = { chirps: [] };
+
+        try {
+          const getRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, { headers: { Authorization: `Bearer ${pat}` } });
+          if (getRes.ok) {
+            const fileData = await getRes.json();
+            const decoded = atob(fileData.content.replace(/\n/g, ''));
+            existingData = JSON.parse(decoded);
+          }
+        } catch {}
+
+        existingData.chirps.push(newChirp);
+
+        const putRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `feat(enqueue): add Chirp ${chirpId} via Gryllus Studio`,
+            content: btoa(JSON.stringify(existingData, null, 2))
+          })
+        });
+
+        if (putRes.ok) {
+          toast.className = 'status-toast success';
+          toast.innerHTML = `✅ Chirp published successfully! ID: <strong>${chirpId}</strong>`;
+          toast.style.display = 'block';
+          loadQueues();
+        } else {
+          throw new Error(await putRes.text());
+        }
+      } catch (err) {
+        toast.className = 'status-toast error';
+        toast.innerHTML = `❌ Error publishing Chirp: ${err.message}`;
+        toast.style.display = 'block';
+      }
+    }
+
+    function renderLiveTemplate() {
+      const src = document.getElementById('templateSource').value;
+      const sampleContext = {
+        subject: 'Deployment Success',
+        message: 'Application v1.2.0 deployed clean to production.',
+        priority: 'VIP',
+        timestamp: new Date().toLocaleTimeString()
+      };
+
+      let rendered = src.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, key) => sampleContext[key] || '');
+      document.getElementById('templatePreview').innerHTML = rendered;
+    }
+
+    renderLiveTemplate();
+    if (pat) loadQueues();
+  </script>
+
+</body>
+</html>
