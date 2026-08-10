@@ -206,7 +206,6 @@
     .status-toast.success { background: rgba(82, 183, 136, 0.2); border: 1px solid var(--accent-lime); color: var(--accent-bright); }
     .status-toast.error { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; }
 
-    /* Glassmorphic Modal Component */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -551,7 +550,7 @@
       renderTargetsList();
       if (pat) {
         document.getElementById('githubPat').value = pat;
-        await validateAndShowProfile();
+        await validateAndShowProfile(false); // Auto-restore on page load, DO NOT show popup modal
       } else {
         showDisconnected();
       }
@@ -565,7 +564,7 @@
       }
       pat = inputPat;
       localStorage.setItem('GRILLOUT_PAT', pat);
-      await validateAndShowProfile();
+      await validateAndShowProfile(true); // Explicit click -> show popup modal!
     }
 
     function logout() {
@@ -582,7 +581,7 @@
       document.getElementById('authConnected').classList.add('hidden');
     }
 
-    async function validateAndShowProfile() {
+    async function validateAndShowProfile(isExplicitClick = false) {
       try {
         const res = await fetch('https://api.github.com/user', {
           headers: { Authorization: `Bearer ${pat}` }
@@ -599,10 +598,16 @@
         document.getElementById('authDisconnected').classList.add('hidden');
         document.getElementById('authConnected').classList.remove('hidden');
 
-        showModal('Conexión Exitosa', `Autenticado correctamente como <strong>@${user.login}</strong> en el enjambre Grillout.`, '✅');
+        // ONLY show popup modal if user explicitly clicked Authenticate button
+        if (isExplicitClick) {
+          showModal('Conexión Exitosa', `Autenticado correctamente como <strong>@${user.login}</strong> en el enjambre Grillout.`, '✅');
+        }
+
         loadQueues();
       } catch (err) {
-        showModal('Fallo de Autenticación', err.message, '❌');
+        if (isExplicitClick) {
+          showModal('Fallo de Autenticación', err.message, '❌');
+        }
         logout();
       }
     }
