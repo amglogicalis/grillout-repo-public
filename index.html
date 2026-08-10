@@ -388,7 +388,10 @@
     <!-- TAB 3: TARGET ENDPOINTS REGISTRY -->
     <section id="tab-targets" class="tab-content">
       <div class="card full-width">
-        <div class="card-title">📍 Destination Endpoints & Target Registry (Gestor de Registros y Rutas)</div>
+        <div class="card-title">
+          <span>📍 Destination Endpoints & Target Registry (Gestor de Registros y Rutas)</span>
+          <button class="btn btn-secondary" onclick="seedDemoTargets()" style="margin-left: auto; padding: 6px 12px;">🧪 Seed Demo Endpoints (1 de cada tipo)</button>
+        </div>
         <div class="help-tooltip">
           📍 <strong>Registro Central de Destinos:</strong> Guarda y administra aquí las URLs de Webhooks, Tokens de Bots o Emails de destino para reutilizarlos fácilmente sin tener que escribirlos manualmente en cada envío.
         </div>
@@ -527,6 +530,15 @@
     let authenticatedUser = null;
     let targetRegistry = JSON.parse(localStorage.getItem('GRILLOUT_TARGETS') || '[]');
 
+    const DEMO_TARGETS = [
+      { alias: '💬 Discord-Production-Alerts', type: 'discord', endpoint: 'https://discord.com/api/webhooks/1234567890/demo_discord_webhook_token', id: 101 },
+      { alias: '📱 Slack-DevOps-Channel', type: 'slack', endpoint: 'https://hooks.slack.com/services/T00000000/B00000000/demo_slack_token', id: 102 },
+      { alias: '✈️ Telegram-Security-Bot', type: 'telegram', endpoint: '789123456:AAFdDemoTelegramToken:987654321', id: 103 },
+      { alias: '🌐 API-Gateway-Events-Webhook', type: 'webhook', endpoint: 'https://api.empresa.com/v1/events/webhook', id: 104 },
+      { alias: '📧 Soporte-Email-Alerts', type: 'email', endpoint: 'soporte@empresa.com', id: 105 },
+      { alias: '🐙 GitHub-Issues-Tracker', type: 'github_issue', endpoint: 'amglogicalis/Terra', id: 106 }
+    ];
+
     function showModal(title, message, icon = '🦗') {
       document.getElementById('modalIcon').textContent = icon;
       document.getElementById('modalTitle').textContent = title;
@@ -547,13 +559,25 @@
     }
 
     async function initAuth() {
+      if (targetRegistry.length === 0) {
+        targetRegistry = DEMO_TARGETS;
+        localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
+      }
       renderTargetsList();
+
       if (pat) {
         document.getElementById('githubPat').value = pat;
-        await validateAndShowProfile(false); // Auto-restore on page load, DO NOT show popup modal
+        await validateAndShowProfile(false);
       } else {
         showDisconnected();
       }
+    }
+
+    function seedDemoTargets() {
+      targetRegistry = DEMO_TARGETS;
+      localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
+      renderTargetsList();
+      showModal('Destinos de Ejemplo Cargados', 'Se han cargado 6 endpoints de ejemplo (1 de cada tipo: Discord, Slack, Telegram, Webhook, Email, Issues).', '🧪');
     }
 
     async function savePat() {
@@ -564,7 +588,7 @@
       }
       pat = inputPat;
       localStorage.setItem('GRILLOUT_PAT', pat);
-      await validateAndShowProfile(true); // Explicit click -> show popup modal!
+      await validateAndShowProfile(true);
     }
 
     function logout() {
@@ -598,7 +622,6 @@
         document.getElementById('authDisconnected').classList.add('hidden');
         document.getElementById('authConnected').classList.remove('hidden');
 
-        // ONLY show popup modal if user explicitly clicked Authenticate button
         if (isExplicitClick) {
           showModal('Conexión Exitosa', `Autenticado correctamente como <strong>@${user.login}</strong> en el enjambre Grillout.`, '✅');
         }
@@ -643,7 +666,7 @@
       select.innerHTML = '<option value="">-- Usar Endpoint de Registro Guardado o Entrada Manual --</option>';
 
       if (targetRegistry.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No hay destinos registrados. Añade tu primer endpoint arriba.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No hay destinos registrados. Haz clic en "Seed Demo Endpoints" arriba para cargar ejemplos.</td></tr>';
         return;
       }
 
