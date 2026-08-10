@@ -55,36 +55,12 @@
       z-index: 100;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand img { height: 42px; width: auto; filter: drop-shadow(0 0 8px rgba(82, 183, 136, 0.4)); }
+    .brand-text h1 { font-family: var(--font-heading); font-size: 1.4rem; font-weight: 700; color: #ffffff; }
+    .brand-text p { font-size: 0.78rem; color: var(--text-muted); }
 
-    .brand img {
-      height: 42px;
-      width: auto;
-      filter: drop-shadow(0 0 8px rgba(82, 183, 136, 0.4));
-    }
-
-    .brand-text h1 {
-      font-family: var(--font-heading);
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #ffffff;
-    }
-
-    .brand-text p {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .auth-bar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
+    .auth-bar { display: flex; align-items: center; gap: 12px; }
     .hidden { display: none !important; }
 
     .user-profile-badge {
@@ -97,18 +73,11 @@
       padding: 6px 16px 6px 8px;
     }
 
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 2px solid var(--accent-lime);
-    }
-
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--accent-lime); }
     .user-info { display: flex; flex-direction: column; }
     .user-handle { font-weight: 700; font-size: 0.85rem; color: #ffffff; }
     .user-status { font-size: 0.72rem; color: var(--accent-lime); }
 
-    /* Navigation Bar / Tabs */
     nav.nav-tabs {
       background: rgba(11, 25, 16, 0.9);
       border-bottom: 1px solid var(--border-color);
@@ -134,30 +103,13 @@
     }
 
     .tab-btn:hover { color: #fff; background: rgba(82, 183, 136, 0.05); }
+    .tab-btn.active { color: var(--accent-lime); border-bottom-color: var(--accent-lime); background: rgba(82, 183, 136, 0.1); }
 
-    .tab-btn.active {
-      color: var(--accent-lime);
-      border-bottom-color: var(--accent-lime);
-      background: rgba(82, 183, 136, 0.1);
-    }
-
-    main {
-      max-width: 1300px;
-      width: 100%;
-      margin: 24px auto;
-      padding: 0 24px;
-      flex: 1;
-    }
-
+    main { max-width: 1300px; width: 100%; margin: 24px auto; padding: 0 24px; flex: 1; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .grid-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-
+    .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .full-width { grid-column: span 2; }
 
     .card {
@@ -189,21 +141,11 @@
       border-radius: 6px;
       border-left: 3px solid var(--accent-lime);
       margin-bottom: 16px;
+      line-height: 1.5;
     }
 
-    .form-group {
-      margin-bottom: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
+    .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
     .form-row { display: flex; gap: 12px; }
     .form-row > * { flex: 1; }
 
@@ -224,37 +166,11 @@
       box-shadow: 0 0 10px rgba(82, 183, 136, 0.25);
     }
 
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 6px;
-    }
-
-    .checkbox-item {
-      background: rgba(11, 25, 16, 0.6);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-
+    .checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px; }
+    .checkbox-item { background: rgba(11, 25, 16, 0.6); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; }
     .checkbox-item input { accent-color: var(--accent-lime); cursor: pointer; }
 
-    .switch-group {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px;
-      background: rgba(11, 25, 16, 0.6);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
+    .switch-group { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(11, 25, 16, 0.6); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; }
 
     .btn {
       background: linear-gradient(135deg, var(--accent-forest), var(--border-accent));
@@ -272,26 +188,9 @@
       transition: all 0.2s ease;
     }
 
-    .btn:hover {
-      background: linear-gradient(135deg, var(--border-accent), var(--accent-lime));
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(82, 183, 136, 0.3);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: var(--border-color);
-      color: var(--text-muted);
-    }
-
-    .btn-danger {
-      background: rgba(230, 57, 70, 0.2);
-      border: 1px solid var(--badge-red);
-      color: #ff85a1;
-      padding: 4px 12px;
-      font-size: 0.78rem;
-      border-radius: 20px;
-    }
+    .btn:hover { background: linear-gradient(135deg, var(--border-accent), var(--accent-lime)); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(82, 183, 136, 0.3); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.05); border-color: var(--border-color); color: var(--text-muted); }
+    .btn-danger { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; padding: 4px 12px; font-size: 0.78rem; border-radius: 20px; }
 
     table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.88rem; }
     th { background: rgba(15, 36, 23, 0.9); color: var(--accent-lime); text-align: left; padding: 12px; font-family: var(--font-heading); font-weight: 600; border-bottom: 1px solid var(--border-color); }
@@ -306,9 +205,55 @@
     .status-toast { padding: 12px 16px; border-radius: 8px; margin-top: 12px; font-size: 0.88rem; display: none; }
     .status-toast.success { background: rgba(82, 183, 136, 0.2); border: 1px solid var(--accent-lime); color: var(--accent-bright); }
     .status-toast.error { background: rgba(230, 57, 70, 0.2); border: 1px solid var(--badge-red); color: #ff85a1; }
+
+    /* Glassmorphic Modal Component */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(5, 14, 9, 0.8);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-card {
+      background: #0f2417;
+      border: 1px solid var(--accent-lime);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 480px;
+      padding: 24px;
+      box-shadow: 0 0 40px rgba(82, 183, 136, 0.3);
+      animation: modalFadeIn 0.25s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header { display: flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .modal-body { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; margin-bottom: 20px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
   </style>
 </head>
 <body>
+
+  <!-- Custom Glassmorphic Modal Container -->
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div id="modalHeader" class="modal-header">
+        <span id="modalIcon">🦗</span>
+        <span id="modalTitle">Notification</span>
+      </div>
+      <div id="modalBody" class="modal-body">Modal Message</div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
 
   <header>
     <div class="brand">
@@ -340,6 +285,7 @@
   <nav class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('dashboard')">🎛️ Queue Monitor</button>
     <button class="tab-btn" onclick="switchTab('publisher')">📢 Multicast Publisher</button>
+    <button class="tab-btn" onclick="switchTab('targets')">📍 Target Endpoints Registry</button>
     <button class="tab-btn" onclick="switchTab('settings')">⚙️ Module Controls & Settings</button>
     <button class="tab-btn" onclick="switchTab('templates')">🎨 Template Synthesizer</button>
     <button class="tab-btn" onclick="switchTab('dlq')">🔄 DLQ & Forensic Replay</button>
@@ -381,7 +327,8 @@
       <div class="card full-width">
         <div class="card-title">📢 Multicast Chirp Publisher (Difusión Multi-Canal Simultánea)</div>
         <div class="help-tooltip">
-          📢 <strong>¿Qué es un Multicast Chirp?</strong> Es un único mensaje enviado a Grillout que se difunde a múltiples destinos al mismo tiempo (Discord, Slack, Telegram, Webhook, Email, Issues) adaptando el formato para cada plataforma de forma automática.
+          📢 <strong>¿Qué es un Multicast Chirp?</strong> Es un único mensaje enviado a Grillout que se difunde a múltiples destinos al mismo tiempo (Discord, Slack, Telegram, Webhook, Email, Issues) adaptando el formato para cada plataforma de forma automática.<br><br>
+          🔑 <strong>¿Qué es FIFO GroupKey (Optional)?</strong> Identificador de un recurso o usuario específico (ej. <code>user_99</code> o <code>order_1001</code>). Garantiza que todas las notificaciones dirigidas al mismo recurso se procesen en <strong>estricto orden cronológico secuencial</strong> (1 -> 2 -> 3) sin desordenarse.
         </div>
         <form id="pubForm" onsubmit="publishChirp(event)">
           <div class="form-row">
@@ -399,8 +346,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label>FIFO GroupKey (Optional)</label>
-              <input type="text" id="pubGroupKey" placeholder="e.g. order_1001">
+              <label>FIFO GroupKey (Optional - Orden Estricto)</label>
+              <input type="text" id="pubGroupKey" placeholder="e.g. user_99 o order_1001">
             </div>
           </div>
 
@@ -410,7 +357,14 @@
           </div>
 
           <div class="form-group">
-            <label>Select Multicast Destination Targets (Simultaneous Echo):</label>
+            <label>Select Destination Target Endpoint from Registry:</label>
+            <select id="pubRegisteredTarget" onchange="applyRegisteredTarget()">
+              <option value="">-- Usar Endpoint de Registro Guardado o Entrada Manual --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Select Multicast Channels to Dispatch:</label>
             <div class="checkbox-grid">
               <label class="checkbox-item"><input type="checkbox" id="tgtDiscord" checked> 💬 Discord Webhook</label>
               <label class="checkbox-item"><input type="checkbox" id="tgtSlack" checked> 📱 Slack Webhook</label>
@@ -422,7 +376,7 @@
           </div>
 
           <div class="form-group">
-            <label>Target Webhook Endpoint URL</label>
+            <label>Target Endpoint URL / Destination Reference</label>
             <input type="text" id="pubTargetUrl" placeholder="https://discord.com/api/webhooks/... or https://hooks.slack.com/...">
           </div>
 
@@ -432,7 +386,56 @@
       </div>
     </section>
 
-    <!-- TAB 3: MODULE CONTROLS & SETTINGS -->
+    <!-- TAB 3: TARGET ENDPOINTS REGISTRY -->
+    <section id="tab-targets" class="tab-content">
+      <div class="card full-width">
+        <div class="card-title">📍 Destination Endpoints & Target Registry (Gestor de Registros y Rutas)</div>
+        <div class="help-tooltip">
+          📍 <strong>Registro Central de Destinos:</strong> Guarda y administra aquí las URLs de Webhooks, Tokens de Bots o Emails de destino para reutilizarlos fácilmente sin tener que escribirlos manualmente en cada envío.
+        </div>
+
+        <form id="targetForm" onsubmit="saveTarget(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Target Alias Name</label>
+              <input type="text" id="tgtAlias" placeholder="e.g. Discord-Alerts-Channel" required>
+            </div>
+            <div class="form-group">
+              <label>Channel Type</label>
+              <select id="tgtType">
+                <option value="discord">💬 Discord Webhook</option>
+                <option value="slack">📱 Slack Webhook</option>
+                <option value="telegram">✈️ Telegram Bot (BOT_TOKEN:CHAT_ID)</option>
+                <option value="webhook">🌐 Custom HTTP Webhook</option>
+                <option value="email">📧 Email Recipient</option>
+                <option value="github_issue">🐙 GitHub Issue Repo (owner/repo)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Endpoint URL / Destination Value</label>
+            <input type="text" id="tgtEndpoint" placeholder="https://discord.com/api/webhooks/... or user@company.com" required>
+          </div>
+          <button type="submit" class="btn">➕ Register Target Endpoint</button>
+        </form>
+
+        <table style="margin-top: 24px;">
+          <thead>
+            <tr>
+              <th>Alias Name</th>
+              <th>Type</th>
+              <th>Endpoint / Target Reference</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="targetsTableBody">
+            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No target endpoints registered yet. Add your first destination above.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: MODULE CONTROLS & SETTINGS -->
     <section id="tab-settings" class="tab-content">
       <div class="card full-width">
         <div class="card-title">⚙️ Module Controls & Feature Configuration (Activar/Desactivar Módulos)</div>
@@ -471,30 +474,11 @@
           </div>
         </div>
 
-        <div class="switch-group">
-          <div>
-            <strong>⚡ Auto-Tuning Stridulation Batcher</strong>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">Disparo instantáneo en ráfagas de tráfico y acumulo pasivo en bajo tráfico para consumo $0.</p>
-          </div>
-          <input type="checkbox" id="cfgBatcherEnabled" checked style="transform: scale(1.4);">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Instant Burst Threshold (Chirps)</label>
-            <input type="number" id="cfgBurstThreshold" value="50">
-          </div>
-          <div class="form-group">
-            <label>Lease Lock Duration (Minutes)</label>
-            <input type="number" id="cfgLeaseDuration" value="5">
-          </div>
-        </div>
-
         <button class="btn" onclick="saveSettings()" style="margin-top: 12px;">💾 Save Module Settings</button>
       </div>
     </section>
 
-    <!-- TAB 4: TEMPLATE SYNTHESIZER -->
+    <!-- TAB 5: TEMPLATE SYNTHESIZER -->
     <section id="tab-templates" class="tab-content">
       <div class="card full-width">
         <div class="card-title">🎨 Gryllus Template Synthesizer (Motor de Plantillas Integrado)</div>
@@ -520,7 +504,7 @@
       </div>
     </section>
 
-    <!-- TAB 5: DLQ & FORENSIC REPLAY -->
+    <!-- TAB 6: DLQ & FORENSIC REPLAY -->
     <section id="tab-dlq" class="tab-content">
       <div class="card full-width">
         <div class="card-title">🔄 Dead-Letter Queue (DLQ) & Forensic Replay (Sala de Cuarentena y Reintento)</div>
@@ -542,6 +526,18 @@
   <script>
     let pat = localStorage.getItem('GRILLOUT_PAT') || '';
     let authenticatedUser = null;
+    let targetRegistry = JSON.parse(localStorage.getItem('GRILLOUT_TARGETS') || '[]');
+
+    function showModal(title, message, icon = '🦗') {
+      document.getElementById('modalIcon').textContent = icon;
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalBody').innerHTML = message;
+      document.getElementById('modalOverlay').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.add('hidden');
+    }
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -552,6 +548,7 @@
     }
 
     async function initAuth() {
+      renderTargetsList();
       if (pat) {
         document.getElementById('githubPat').value = pat;
         await validateAndShowProfile();
@@ -563,7 +560,7 @@
     async function savePat() {
       const inputPat = document.getElementById('githubPat').value.trim();
       if (!inputPat) {
-        alert('Please enter a valid GitHub PAT.');
+        showModal('Error de Autenticación', 'Por favor introduce un token PAT de GitHub válido.', '❌');
         return;
       }
       pat = inputPat;
@@ -577,8 +574,7 @@
       localStorage.removeItem('GRILLOUT_PAT');
       document.getElementById('githubPat').value = '';
       showDisconnected();
-      const tbody = document.getElementById('queuesBody');
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Authenticate with your GitHub PAT to load active queues.</td></tr>';
+      showModal('Sesión Cerrada', 'Has desconectado la consola de tu cuenta de GitHub.', '🚪');
     }
 
     function showDisconnected() {
@@ -592,7 +588,7 @@
           headers: { Authorization: `Bearer ${pat}` }
         });
 
-        if (!res.ok) throw new Error('Invalid PAT token or revoked access');
+        if (!res.ok) throw new Error('Token PAT inválido o permisos revocados.');
 
         const user = await res.json();
         authenticatedUser = user;
@@ -603,17 +599,75 @@
         document.getElementById('authDisconnected').classList.add('hidden');
         document.getElementById('authConnected').classList.remove('hidden');
 
+        showModal('Conexión Exitosa', `Autenticado correctamente como <strong>@${user.login}</strong> en el enjambre Grillout.`, '✅');
         loadQueues();
       } catch (err) {
-        alert(`Authentication Failed: ${err.message}`);
+        showModal('Fallo de Autenticación', err.message, '❌');
         logout();
       }
+    }
+
+    function saveTarget(e) {
+      e.preventDefault();
+      const alias = document.getElementById('tgtAlias').value.trim();
+      const type = document.getElementById('tgtType').value;
+      const endpoint = document.getElementById('tgtEndpoint').value.trim();
+
+      if (!alias || !endpoint) return;
+
+      targetRegistry.push({ alias, type, endpoint, id: Date.now() });
+      localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
+      
+      document.getElementById('tgtAlias').value = '';
+      document.getElementById('tgtEndpoint').value = '';
+      
+      renderTargetsList();
+      showModal('Destino Registrado', `El endpoint <strong>${alias}</strong> se ha guardado correctamente en el registro.`, '📍');
+    }
+
+    function removeTarget(id) {
+      targetRegistry = targetRegistry.filter(t => t.id !== id);
+      localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
+      renderTargetsList();
+      showModal('Destino Eliminado', 'Se ha eliminado el endpoint del registro.', '🗑️');
+    }
+
+    function renderTargetsList() {
+      const tbody = document.getElementById('targetsTableBody');
+      const select = document.getElementById('pubRegisteredTarget');
+      select.innerHTML = '<option value="">-- Usar Endpoint de Registro Guardado o Entrada Manual --</option>';
+
+      if (targetRegistry.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No hay destinos registrados. Añade tu primer endpoint arriba.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '';
+      targetRegistry.forEach(t => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${t.alias}</strong></td>
+            <td><span class="badge badge-delivered">${t.type.toUpperCase()}</span></td>
+            <td style="font-family: var(--font-code); font-size: 0.8rem;">${t.endpoint}</td>
+            <td>
+              <button class="btn btn-danger" onclick="removeTarget(${t.id})">Eliminar</button>
+            </td>
+          </tr>
+        `;
+
+        select.innerHTML += `<option value="${t.endpoint}">${t.alias} (${t.type})</option>`;
+      });
+    }
+
+    function applyRegisteredTarget() {
+      const val = document.getElementById('pubRegisteredTarget').value;
+      if (val) document.getElementById('pubTargetUrl').value = val;
     }
 
     async function loadQueues() {
       if (!pat || !authenticatedUser) return;
       const tbody = document.getElementById('queuesBody');
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading storage vault from GitHub...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando colas desde GitHub...</td></tr>';
 
       try {
         const owner = authenticatedUser.login;
@@ -622,7 +676,7 @@
         });
 
         if (!filesRes.ok) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--badge-yellow);">No queues created yet in .grillout-storage. Publish a Chirp below to initialize your first queue.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--badge-yellow);">No hay colas creadas aún en .grillout-storage. Publica un Chirp para inicializar tu primera cola.</td></tr>';
           return;
         }
 
@@ -654,11 +708,8 @@
 
     async function publishChirp(e) {
       e.preventDefault();
-      const toast = document.getElementById('pubToast');
-      toast.style.display = 'none';
-
       if (!pat || !authenticatedUser) {
-        alert('Please authenticate with GitHub PAT first.');
+        showModal('Autenticación Requerida', 'Por favor autentícate con tu GitHub PAT primero.', '🔒');
         return;
       }
 
@@ -671,11 +722,10 @@
       try {
         payload = JSON.parse(document.getElementById('pubPayload').value);
       } catch {
-        alert('Invalid JSON Payload!');
+        showModal('Error de JSON', 'El formato del payload JSON no es válido.', '❌');
         return;
       }
 
-      // Collect Multicast Target Channels
       const targets = [];
       if (document.getElementById('tgtDiscord').checked && targetUrl) targets.push({ type: 'discord', endpoint: targetUrl });
       if (document.getElementById('tgtSlack').checked && targetUrl) targets.push({ type: 'slack', endpoint: targetUrl });
@@ -723,17 +773,13 @@
         });
 
         if (putRes.ok) {
-          toast.className = 'status-toast success';
-          toast.innerHTML = `✅ Multicast Chirp published successfully! ID: <strong>${chirpId}</strong> (${targets.length} Multicast targets configured)`;
-          toast.style.display = 'block';
+          showModal('Chirp Publicado', `Multicast Chirp enviado con éxito al canal <strong>${channel}</strong>.<br>ID: <code>${chirpId}</code> (${targets.length} destinos de difusión).`, '📢');
           loadQueues();
         } else {
           throw new Error(await putRes.text());
         }
       } catch (err) {
-        toast.className = 'status-toast error';
-        toast.innerHTML = `❌ Error publishing Chirp: ${err.message}`;
-        toast.style.display = 'block';
+        showModal('Error al Publicar', err.message, '❌');
       }
     }
 
@@ -752,7 +798,7 @@
     }
 
     function saveSettings() {
-      alert('✅ Module Controls & Settings saved successfully!');
+      showModal('Configuración Guardada', 'Se han guardado los ajustes de módulos y reglas de deduplicación/poison shield.', '⚙️');
     }
 
     renderLiveTemplate();
