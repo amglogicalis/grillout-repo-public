@@ -273,19 +273,24 @@
     .modal-body { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; margin-bottom: 20px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
-    /* Template Preview Sandbox Container Bugfix */
+    /* Template Preview Sandboxed Iframe Container */
     .template-sandbox-wrapper {
       background: #07120b;
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 16px;
-      min-height: 350px;
-      max-height: 520px;
-      overflow: auto;
-      contain: content;
+      padding: 6px;
+      height: 480px;
       box-sizing: border-box;
-      word-break: break-word;
       position: relative;
+      overflow: hidden;
+    }
+
+    .template-sandbox-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 8px;
+      background: #07120b;
     }
   </style>
 </head>
@@ -689,9 +694,9 @@
             <textarea id="templateSource" rows="10" placeholder="Escribe o pega aquí tu código de plantilla HTML o Markdown usando {{variable}}..." oninput="renderLiveTemplate()"></textarea>
           </div>
           <div class="form-group">
-            <label>Live Preview Sandbox</label>
+            <label>Live Preview Sandboxed Frame</label>
             <div class="template-sandbox-wrapper">
-              <div id="templatePreview">
+              <div id="templatePreview" style="height: 100%;">
                 <span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>
               </div>
             </div>
@@ -1503,8 +1508,10 @@
 
     function renderLiveTemplate() {
       const src = document.getElementById('templateSource').value;
+      const container = document.getElementById('templatePreview');
+
       if (!src) {
-        document.getElementById('templatePreview').innerHTML = '<span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>';
+        container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>';
         return;
       }
 
@@ -1517,7 +1524,11 @@
       };
 
       let rendered = src.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, key) => sampleContext[key] || '');
-      document.getElementById('templatePreview').innerHTML = rendered;
+
+      // 100% Isolated Sandboxed Iframe (Prevents ALL CSS & DOM leakage into host site)
+      container.innerHTML = `<iframe id="templateSandboxIframe" class="template-sandbox-iframe" sandbox="allow-scripts allow-same-origin"></iframe>`;
+      const iframe = document.getElementById('templateSandboxIframe');
+      iframe.srcdoc = rendered;
     }
 
     function saveSettings() {
