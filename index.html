@@ -256,7 +256,7 @@
       border: 1px solid var(--accent-lime);
       border-radius: 16px;
       width: 90%;
-      max-width: 580px;
+      max-width: 680px;
       padding: 24px;
       box-shadow: 0 0 40px rgba(82, 183, 136, 0.3);
       animation: modalFadeIn 0.25s ease;
@@ -334,25 +334,27 @@
     <section id="tab-dashboard" class="tab-content active">
       <div class="card full-width">
         <div class="card-title">
-          <span>KR Active Stridulation Channels & Queue Monitor</span>
-          <button class="btn btn-secondary" onclick="loadQueues()" style="margin-left: auto; padding: 6px 12px;">🔄 Refresh</button>
+          <span>🎛️ Active Stridulation Channels & Real-Time Queue Monitor</span>
+          <button class="btn btn-secondary" onclick="loadQueues()" style="margin-left: auto; padding: 6px 12px;">🔄 Refresh Live Stats</button>
         </div>
         <div class="help-tooltip">
-          💡 <strong>Monitor de Colas Pasivas:</strong> Visualiza en tiempo real los canales de notificaciones almacenados en <code>.grillout-storage</code> sin ningún servidor encendido en reposo.
+          💡 <strong>Monitor de Colas en Tiempo Real:</strong> Lee y parsea los archivos JSON reales almacenados en <code>.grillout-storage</code> para mostrar conteos exactos de Chirps pendientes, diferidos, DLQ, leases y la severidad máxima.
         </div>
         <table id="queuesTable">
           <thead>
             <tr>
               <th>Channel Name</th>
               <th>Pending Chirps</th>
-              <th>DLQ Items</th>
+              <th>Delayed Delivery</th>
+              <th>DLQ Quarantined</th>
               <th>Lease Status</th>
+              <th>Max Priority</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="queuesBody">
             <tr>
-              <td colspan="5" style="text-align: center; color: var(--text-muted);">Authenticate with your GitHub PAT to load active queues.</td>
+              <td colspan="7" style="text-align: center; color: var(--text-muted);">Authenticate with your GitHub PAT to load active queues.</td>
             </tr>
           </tbody>
         </table>
@@ -657,6 +659,7 @@
     let activeGwOrigins = [];
     let activeGwTargets = [];
     let editingGwId = null;
+    let cachedQueueData = {};
 
     const DEMO_TARGETS = [
       { alias: '💬 Discord-Production-Alerts', type: 'discord', endpoint: 'https://discord.com/api/webhooks/1234567890/demo_discord_webhook_token', id: 101 },
@@ -1170,7 +1173,7 @@
     async function loadQueues() {
       if (!pat || !authenticatedUser) return;
       const tbody = document.getElementById('queuesBody');
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando colas desde GitHub...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Cargando métricas reales de colas desde GitHub...</td></tr>';
 
       try {
         const owner = authenticatedUser.login;
@@ -1179,34 +1182,100 @@
         });
 
         if (!filesRes.ok) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--badge-yellow);">No hay colas creadas aún en .grillout-storage. Publica un Chirp para inicializar tu primera cola.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--badge-yellow);">No hay colas creadas aún en .grillout-storage. Publica un Chirp para inicializar tu primera cola.</td></tr>';
           return;
         }
 
         const files = await filesRes.json();
-        const channels = new Set();
-        files.forEach(f => {
-          const name = f.name.replace('_dlq.json', '').replace('.json', '');
-          channels.add(name);
-        });
+        const channelsMap = new Map();
+        const now = new Date();
+
+        for (const f of files) {
+          const isDlq = f.name.endsWith('_dlq.json');
+          const channelName = isDlq ? f.name.replace('_dlq.json', '') : f.name.replace('.json', '');
+
+          if (!channelsMap.has(channelName)) {
+            channelsMap.set(channelName, {
+              channel: channelName,
+              pending: 0,
+              delayed: 0,
+              dlq: 0,
+              leaseStatus: 'FREE',
+              maxPriority: 'NONE',
+              chirps: []
+            });
+          }
+
+          const entry = channelsMap.get(channelName);
+
+          // Fetch actual JSON file content for 100% precision
+          try {
+            const contentRes = await fetch(f.download_url, {
+              headers: { Authorization: `Bearer ${pat}` }
+            });
+            if (contentRes.ok) {
+              const queueJson = await contentRes.json();
+              const chirpsList = queueJson.chirps || [];
+
+              if (isDlq) {
+                entry.dlq = chirpsList.length;
+              } else {
+                entry.chirps = chirpsList;
+                const pending = chirpsList.filter(c => c.status === 'PENDING' || c.status === 'LEASED');
+                entry.pending = pending.length;
+                entry.delayed = chirpsList.filter(c => c.deliverAt && new Date(c.deliverAt) > now).length;
+
+                const isLeased = chirpsList.some(c => c.leasedUntil && new Date(c.leasedUntil) > now);
+                entry.leaseStatus = isLeased ? '🔒 LEASED' : '🟢 FREE';
+
+                if (pending.length > 0) {
+                  const priorities = pending.map(c => c.priority || 'NORMAL');
+                  if (priorities.includes('CRITICAL')) entry.maxPriority = 'CRITICAL';
+                  else if (priorities.includes('VIP')) entry.maxPriority = 'VIP';
+                  else if (priorities.includes('NORMAL')) entry.maxPriority = 'NORMAL';
+                  else entry.maxPriority = 'LOW';
+                }
+              }
+            }
+          } catch {}
+        }
 
         tbody.innerHTML = '';
-        channels.forEach(ch => {
+        cachedQueueData = {};
+
+        channelsMap.forEach((q, ch) => {
+          cachedQueueData[ch] = q.chirps;
+          const priorityBadgeClass = q.maxPriority === 'CRITICAL' ? 'badge-dlq' : q.maxPriority === 'VIP' ? 'badge-pending' : 'badge-delivered';
+
           tbody.innerHTML += `
             <tr>
-              <td><strong>${ch}</strong></td>
-              <td><span class="badge badge-pending">Active</span></td>
-              <td><span class="badge badge-dlq">0 DLQ Items</span></td>
-              <td><span class="badge badge-delivered">Lease Free</span></td>
+              <td><strong>${q.channel}</strong></td>
+              <td><span class="badge badge-pending">${q.pending} Pending</span></td>
+              <td><span class="badge badge-delivered">${q.delayed} Delayed</span></td>
+              <td><span class="badge ${q.dlq > 0 ? 'badge-dlq' : 'badge-delivered'}">${q.dlq} Quarantined</span></td>
+              <td><span class="badge ${q.leaseStatus.includes('LEASED') ? 'badge-pending' : 'badge-delivered'}">${q.leaseStatus}</span></td>
+              <td><span class="badge ${priorityBadgeClass}">${q.maxPriority}</span></td>
               <td>
-                <button class="btn btn-secondary" onclick="triggerConsume('${ch}')" style="padding: 4px 8px; font-size: 0.78rem;">⚡ Consume Batch</button>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn" onclick="inspectQueue('${q.channel}')" style="padding: 4px 8px; font-size: 0.78rem;">👁️ Inspect JSON</button>
+                  <button class="btn btn-secondary" onclick="triggerConsume('${q.channel}')" style="padding: 4px 8px; font-size: 0.78rem;">⚡ Consume</button>
+                </div>
               </td>
             </tr>
           `;
         });
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--badge-red);">Error: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--badge-red);">Error: ${err.message}</td></tr>`;
       }
+    }
+
+    function inspectQueue(channel) {
+      const chirps = cachedQueueData[channel] || [];
+      const jsonStr = JSON.stringify(chirps, null, 2);
+      showModal(`Inspección de Cola JSON: ${channel}`, `
+        <p style="margin-bottom: 10px; font-size: 0.82rem; color: var(--text-muted);">Mensajes y Payloads almacenados en la cola activa (${chirps.length} elementos):</p>
+        <pre style="background: rgba(0, 0, 0, 0.6); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-code); font-size: 0.78rem; color: var(--accent-lime); max-height: 350px; overflow-y: auto;">${jsonStr || '[]'}</pre>
+      `, '👁️');
     }
 
     async function publishChirp(e) {
