@@ -147,6 +147,16 @@
       line-height: 1.5;
     }
 
+    .form-section-title {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent-lime);
+      margin: 16px 0 8px 0;
+      border-bottom: 1px solid rgba(82, 183, 136, 0.2);
+      padding-bottom: 4px;
+    }
+
     .form-group { margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
     .form-row { display: flex; gap: 12px; }
@@ -246,10 +256,12 @@
       border: 1px solid var(--accent-lime);
       border-radius: 16px;
       width: 90%;
-      max-width: 540px;
+      max-width: 580px;
       padding: 24px;
       box-shadow: 0 0 40px rgba(82, 183, 136, 0.3);
       animation: modalFadeIn 0.25s ease;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     @keyframes modalFadeIn {
@@ -272,7 +284,7 @@
         <span id="modalTitle">Notification</span>
       </div>
       <div id="modalBody" class="modal-body">Modal Message</div>
-      <div class="modal-actions">
+      <div class="modal-actions" id="modalActions">
         <button class="btn" onclick="closeModal()">Entendido</button>
       </div>
     </div>
@@ -326,51 +338,48 @@
           <button class="btn btn-secondary" onclick="seedDemoGateways()" style="margin-left: auto; padding: 6px 12px;">🧪 Seed Demo Gateways</button>
         </div>
         <div class="help-tooltip">
-          📋 <strong>Webhook Gateways Configurables por Desarrollador:</strong> Crea endpoints HTTP únicos con reglas HMAC, filtros de expresiones JSON (`payload.amount > 50`), mapeo de campos dinámico y rate limits por canal.
+          📋 <strong>Pipeline de 3 Fases Completo:</strong> Configura los Orígenes de Entrada (Apps de Terra / Webhooks Externos), Filtros de Seguridad y los Destinos Multicast de Salida.
         </div>
 
         <form id="gatewayForm" onsubmit="createGateway(event)">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Gateway Name / Channel Topic</label>
-              <input type="text" id="gwChannel" placeholder="e.g. sinchlor-alerts or stripe-payments" required>
-            </div>
-            <div class="form-group">
-              <label>Provider Preset</label>
-              <select id="gwProvider">
-                <option value="sinchlor">🔌 Sinchlor Microservices (Terra)</option>
-                <option value="rolla">📦 Rolla Deployments (Terra)</option>
-                <option value="stripe">💳 Stripe Payments</option>
-                <option value="github">🐙 GitHub Actions / Webhooks</option>
-                <option value="custom">🌐 Custom HTTP Webhook Provider</option>
-              </select>
-            </div>
+          <div class="form-group">
+            <label>Gateway / Channel Name</label>
+            <input type="text" id="gwChannel" placeholder="e.g. alertas-produccion or stripe-payments" required>
           </div>
 
-          <!-- Developer Advanced Options Grid -->
+          <!-- FASE 1: ORÍGENES / PROVIDERS ACUMULATIVOS DINÁMICOS -->
+          <div class="form-section-title">📥 FASE 1: Orígenes Autorizados (Entradas Acumulables)</div>
+          <div class="form-row">
+            <input type="text" id="gwSourceAlias" placeholder="Alias Origen (e.g. Sinchlor Microservice, Webbl App)">
+            <input type="text" id="gwSourceUrl" placeholder="URL Origen (e.g. https://sinchlor.empresa.com/events)">
+            <button type="button" class="btn btn-secondary" onclick="addSourceOrigin()" style="white-space: nowrap;">➕ Sumar Origen</button>
+          </div>
+          <div id="gwOriginsChips" class="target-chips"></div>
+
+          <!-- FASE 2: FILTROS & HMAC SECRET -->
+          <div class="form-section-title">🛡️ FASE 2: Seguridad & Reglas de Filtro JSON</div>
           <div class="form-row">
             <div class="form-group">
-              <label>🔐 HMAC Secret Key (Opcional - Validar Firma Criptográfica)</label>
+              <label>🔐 Secret HMAC (Firma Criptográfica)</label>
               <input type="password" id="gwHmacSecret" placeholder="whsec_xxxxxxxxxxxx (Stripe / GitHub Secret)">
             </div>
             <div class="form-group">
-              <label>🔍 Payload Expression Filter (Opcional)</label>
+              <label>🔍 Expression Filter Rule</label>
               <input type="text" id="gwFilter" placeholder="e.g. payload.amount > 50 && payload.status == 'succeeded'">
             </div>
           </div>
 
+          <!-- FASE 3: DESTINOS MULTICAST DE SALIDA -->
+          <div class="form-section-title">📢 FASE 3: Destinos Multicast (Salidas Transmitidas)</div>
           <div class="form-row">
-            <div class="form-group">
-              <label>🔀 Subject Field Mapping</label>
-              <input type="text" id="gwSubjectMap" placeholder="payload.event_type or payload.subject">
-            </div>
-            <div class="form-group">
-              <label>⏱️ Rate Limit (Max Requests / Minute)</label>
-              <input type="number" id="gwRateLimit" value="60">
-            </div>
+            <select id="gwRegisteredTargetSelect" style="flex: 1;">
+              <option value="">-- Seleccionar Destino del Target Registry --</option>
+            </select>
+            <button type="button" class="btn btn-secondary" onclick="addGwTarget()" style="white-space: nowrap;">➕ Sumar Destino</button>
           </div>
+          <div id="gwTargetsChips" class="target-chips"></div>
 
-          <button type="submit" class="btn" style="margin-top: 8px;">⚡ Create Developer Webhook Gateway</button>
+          <button type="submit" class="btn" style="margin-top: 16px; width: 100%; font-size: 1rem; padding: 12px;">⚡ Create Developer Webhook Gateway Pipeline</button>
         </form>
 
         <h3 style="margin-top: 28px; font-family: var(--font-heading); color: var(--accent-lime);">📊 Active Webhook Gateways & End-to-End Multicast Flows</h3>
@@ -430,7 +439,7 @@
     <section id="tab-dashboard" class="tab-content">
       <div class="card full-width">
         <div class="card-title">
-          <span>🦗 Active Stridulation Channels & Queue Monitor</span>
+          <span>KR Active Stridulation Channels & Queue Monitor</span>
           <button class="btn btn-secondary" onclick="loadQueues()" style="margin-left: auto; padding: 6px 12px;">🔄 Refresh</button>
         </div>
         <div class="help-tooltip">
@@ -659,6 +668,10 @@
     let targetRegistry = JSON.parse(localStorage.getItem('GRILLOUT_TARGETS') || '[]');
     let gatewaysList = JSON.parse(localStorage.getItem('GRILLOUT_GATEWAYS') || '[]');
 
+    let activeGwOrigins = [];
+    let activeGwTargets = [];
+    let editingGwId = null;
+
     const DEMO_TARGETS = [
       { alias: '💬 Discord-Production-Alerts', type: 'discord', endpoint: 'https://discord.com/api/webhooks/1234567890/demo_discord_webhook_token', id: 101 },
       { alias: '📱 Slack-DevOps-Channel', type: 'slack', endpoint: 'https://hooks.slack.com/services/T00000000/B00000000/demo_slack_token', id: 102 },
@@ -669,15 +682,40 @@
     ];
 
     const DEMO_GATEWAYS = [
-      { channel: 'sinchlor-alerts', provider: 'sinchlor', filter: "payload.latencyMs > 1000", hmacSecret: 'whsec_sinchlor_123', rateLimit: 60, targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'], hits: 14, id: 201 },
-      { channel: 'rolla-deployments', provider: 'rolla', filter: "payload.event == 'RELEASE_DEPLOYED'", hmacSecret: 'whsec_rolla_456', rateLimit: 30, targets: ['📱 Slack-DevOps-Channel', '🐙 GitHub-Issues-Tracker'], hits: 8, id: 202 },
-      { channel: 'stripe-payments', provider: 'stripe', filter: "payload.amount >= 50 && payload.status == 'succeeded'", hmacSecret: 'whsec_stripe_789', rateLimit: 120, targets: ['💬 Discord-Production-Alerts', '📧 Soporte-Email-Alerts'], hits: 42, id: 203 }
+      {
+        channel: 'sinchlor-alerts',
+        origins: [{ alias: 'Sinchlor Microservices', url: 'https://sinchlor.empresa.com/events' }],
+        filter: "payload.latencyMs > 1000",
+        hmacSecret: 'whsec_sinchlor_123',
+        targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'],
+        hits: 14,
+        id: 201
+      },
+      {
+        channel: 'rolla-deployments',
+        origins: [{ alias: 'Rolla CD Engine', url: 'https://rolla.empresa.com/deployments' }],
+        filter: "payload.event == 'RELEASE_DEPLOYED'",
+        hmacSecret: 'whsec_rolla_456',
+        targets: ['📱 Slack-DevOps-Channel', '🐙 GitHub-Issues-Tracker'],
+        hits: 8,
+        id: 202
+      },
+      {
+        channel: 'stripe-payments',
+        origins: [{ alias: 'Stripe Payment Gateway', url: 'https://api.stripe.com' }],
+        filter: "payload.amount >= 50 && payload.status == 'succeeded'",
+        hmacSecret: 'whsec_stripe_789',
+        targets: ['💬 Discord-Production-Alerts', '📧 Soporte-Email-Alerts'],
+        hits: 42,
+        id: 203
+      }
     ];
 
     function showModal(title, message, icon = '🦗') {
       document.getElementById('modalIcon').textContent = icon;
       document.getElementById('modalTitle').textContent = title;
       document.getElementById('modalBody').innerHTML = message;
+      document.getElementById('modalActions').innerHTML = `<button class="btn" onclick="closeModal()">Entendido</button>`;
       document.getElementById('modalOverlay').classList.remove('hidden');
     }
 
@@ -704,6 +742,7 @@
       }
 
       renderTargetsList();
+      renderGwTargetSelect();
       renderGatewaysList();
 
       if (pat) {
@@ -718,39 +757,144 @@
       gatewaysList = DEMO_GATEWAYS;
       localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
       renderGatewaysList();
-      showModal('Gateways de Ejemplo Cargados', 'Se han generado 3 Webhook Gateways avanzados con HMAC, filtros de expresiones y rate limits.', '🧪');
+      showModal('Gateways de Ejemplo Cargados', 'Se han generado 3 Webhook Gateways avanzados con Orígenes, HMAC, Filtros y Destinos Multicast.', '🧪');
+    }
+
+    function addSourceOrigin() {
+      const alias = document.getElementById('gwSourceAlias').value.trim();
+      const url = document.getElementById('gwSourceUrl').value.trim();
+      if (!alias || !url) {
+        showModal('Ingresa Nombre y URL', 'Introduce el nombre y la URL del origen para sumarlo.', '⚠️');
+        return;
+      }
+
+      activeGwOrigins.push({ alias, url });
+      document.getElementById('gwSourceAlias').value = '';
+      document.getElementById('gwSourceUrl').value = '';
+      renderGwOriginsChips();
+    }
+
+    function removeSourceOrigin(index) {
+      activeGwOrigins.splice(index, 1);
+      renderGwOriginsChips();
+    }
+
+    function renderGwOriginsChips() {
+      const container = document.getElementById('gwOriginsChips');
+      container.innerHTML = '';
+      activeGwOrigins.forEach((o, i) => {
+        container.innerHTML += `
+          <div class="chip">
+            <span>📥 ${o.alias} (${o.url})</span>
+            <span class="chip-remove" onclick="removeSourceOrigin(${i})">&times;</span>
+          </div>
+        `;
+      });
+    }
+
+    function addGwTarget() {
+      const select = document.getElementById('gwRegisteredTargetSelect');
+      const val = select.value;
+      if (!val) return;
+
+      if (!activeGwTargets.includes(val)) {
+        activeGwTargets.push(val);
+        renderGwTargetsChips();
+      }
+    }
+
+    function removeGwTarget(index) {
+      activeGwTargets.splice(index, 1);
+      renderGwTargetsChips();
+    }
+
+    function renderGwTargetsChips() {
+      const container = document.getElementById('gwTargetsChips');
+      container.innerHTML = '';
+      activeGwTargets.forEach((t, i) => {
+        container.innerHTML += `
+          <div class="chip">
+            <span>📢 ${t}</span>
+            <span class="chip-remove" onclick="removeGwTarget(${i})">&times;</span>
+          </div>
+        `;
+      });
+    }
+
+    function renderGwTargetSelect() {
+      const select = document.getElementById('gwRegisteredTargetSelect');
+      select.innerHTML = '<option value="">-- Seleccionar Destino del Target Registry --</option>';
+      targetRegistry.forEach(t => {
+        select.innerHTML += `<option value="${t.alias}">${t.alias} (${t.type})</option>`;
+      });
     }
 
     function createGateway(e) {
       e.preventDefault();
       const channel = document.getElementById('gwChannel').value.trim();
-      const provider = document.getElementById('gwProvider').value;
       const hmacSecret = document.getElementById('gwHmacSecret').value.trim();
       const filter = document.getElementById('gwFilter').value.trim();
-      const rateLimit = parseInt(document.getElementById('gwRateLimit').value) || 60;
 
       if (!channel) return;
 
-      const newGw = {
-        channel,
-        provider,
-        hmacSecret,
-        filter,
-        rateLimit,
-        targets: ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'],
-        hits: 0,
-        id: Date.now()
-      };
+      if (editingGwId) {
+        const index = gatewaysList.findIndex(g => g.id === editingGwId);
+        if (index !== -1) {
+          gatewaysList[index] = {
+            ...gatewaysList[index],
+            channel,
+            origins: [...activeGwOrigins],
+            filter,
+            hmacSecret,
+            targets: [...activeGwTargets]
+          };
+          editingGwId = null;
+          showModal('Gateway Actualizado', `Se han guardado los cambios para el Webhook Gateway <strong>${channel}</strong>.`, '✏️');
+        }
+      } else {
+        const newGw = {
+          channel,
+          origins: activeGwOrigins.length > 0 ? [...activeGwOrigins] : [{ alias: 'Custom Provider', url: 'https://api.empresa.com' }],
+          hmacSecret,
+          filter,
+          targets: activeGwTargets.length > 0 ? [...activeGwTargets] : ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'],
+          hits: 0,
+          id: Date.now()
+        };
 
-      gatewaysList.push(newGw);
+        gatewaysList.push(newGw);
+        showModal('Developer Webhook Gateway Creado', `Se ha configurado el pipeline completo (Orígenes ➔ Filtro ➔ Destinos) para el canal <strong>${channel}</strong>.`, '⚡');
+      }
+
       localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
 
       document.getElementById('gwChannel').value = '';
       document.getElementById('gwHmacSecret').value = '';
       document.getElementById('gwFilter').value = '';
-
+      activeGwOrigins = [];
+      activeGwTargets = [];
+      renderGwOriginsChips();
+      renderGwTargetsChips();
       renderGatewaysList();
-      showModal('Developer Webhook Gateway Creado', `Se ha configurado el endpoint único con reglas de filtro y HMAC para el canal <strong>${channel}</strong>.`, '⚡');
+    }
+
+    function editGateway(id) {
+      const gw = gatewaysList.find(g => g.id === id);
+      if (!gw) return;
+
+      editingGwId = gw.id;
+      document.getElementById('gwChannel').value = gw.channel;
+      document.getElementById('gwHmacSecret').value = gw.hmacSecret || '';
+      document.getElementById('gwFilter').value = gw.filter || '';
+
+      activeGwOrigins = gw.origins ? [...gw.origins] : [];
+      activeGwTargets = gw.targets ? [...gw.targets] : [];
+
+      renderGwOriginsChips();
+      renderGwTargetsChips();
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showModal('Modo Edición Activado', `Modificando los parámetros del Gateway <strong>${gw.channel}</strong>. Ajusta Orígenes, Filtros o Destinos arriba y haz clic en Guardar.`, '✏️');
     }
 
     function removeGateway(id) {
@@ -779,6 +923,7 @@
       container.innerHTML = '';
       gatewaysList.forEach(g => {
         const gwUrl = `https://api.github.com/repos/${owner}/.grillout-storage/dispatches?channel=${g.channel}`;
+        const originsLabel = g.origins ? g.origins.map(o => `${o.alias}`).join(', ') : 'Custom Provider';
 
         container.innerHTML += `
           <div class="card" style="border: 1px solid var(--border-accent); background: rgba(15, 36, 23, 0.7);">
@@ -787,10 +932,11 @@
                 <span style="font-size: 1.3rem;">📡</span>
                 <div>
                   <h4 style="color: #fff; font-family: var(--font-heading); font-size: 1.05rem;">Channel: ${g.channel}</h4>
-                  <p style="font-size: 0.78rem; color: var(--text-muted);">Provider: <strong>${g.provider.toUpperCase()}</strong> • HMAC: <code>${g.hmacSecret ? '🔒 ENABLED' : '🔓 NONE'}</code> • Limit: <code>${g.rateLimit} req/min</code></p>
+                  <p style="font-size: 0.78rem; color: var(--text-muted);">Origins: <strong>${originsLabel}</strong> • HMAC: <code>${g.hmacSecret ? '🔒 ENABLED' : '🔓 NONE'}</code></p>
                 </div>
               </div>
               <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" onclick="editGateway(${g.id})" style="padding: 6px 12px; font-size: 0.8rem;">✏️ Edit</button>
                 <button class="btn" onclick="copyGatewayUrl('${g.channel}')" style="padding: 6px 12px; font-size: 0.8rem;">📋 Copy Webhook URL</button>
                 <button class="btn btn-danger" onclick="removeGateway(${g.id})">Delete</button>
               </div>
@@ -805,18 +951,18 @@
             <!-- End-to-End Multicast Flow Diagram Card -->
             <div class="flow-diagram-card">
               <div class="flow-step">
-                <div class="flow-step-title">📥 1. Webhook Provider</div>
-                <div class="flow-step-sub">${g.provider.toUpperCase()} Payload</div>
+                <div class="flow-step-title">📥 1. Authorized Origins</div>
+                <div class="flow-step-sub">${originsLabel}</div>
               </div>
               <div class="flow-arrow">➔</div>
               <div class="flow-step">
-                <div class="flow-step-title">🛡️ 2. HMAC & Filter Rule</div>
+                <div class="flow-step-title">🛡️ 2. Shield & Filter Rule</div>
                 <div class="flow-step-sub">${g.filter ? g.filter : 'All Allowed'}</div>
               </div>
               <div class="flow-arrow">➔</div>
               <div class="flow-step">
                 <div class="flow-step-title">📢 3. Multicast Fanout</div>
-                <div class="flow-step-sub">${g.targets.join(' • ')}</div>
+                <div class="flow-step-sub">${g.targets ? g.targets.join(' • ') : 'Discord • Slack'}</div>
               </div>
             </div>
           </div>
@@ -873,6 +1019,7 @@
       targetRegistry = DEMO_TARGETS;
       localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
       renderTargetsList();
+      renderGwTargetSelect();
       showModal('Destinos de Ejemplo Cargados', 'Se han cargado 6 endpoints de ejemplo (1 de cada tipo: Discord, Slack, Telegram, Webhook, Email, Issues).', '🧪');
     }
 
@@ -947,6 +1094,7 @@
       document.getElementById('tgtEndpoint').value = '';
       
       renderTargetsList();
+      renderGwTargetSelect();
       showModal('Destino Registrado', `El endpoint <strong>${alias}</strong> se ha guardado correctamente en el registro.`, '📍');
     }
 
@@ -954,6 +1102,7 @@
       targetRegistry = targetRegistry.filter(t => t.id !== id);
       localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
       renderTargetsList();
+      renderGwTargetSelect();
       showModal('Destino Eliminado', 'Se ha eliminado el endpoint del registro.', '🗑️');
     }
 
