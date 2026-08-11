@@ -401,28 +401,18 @@
         <div class="grid-container">
           <div class="form-group">
             <label>Sample Incoming Provider Webhook Payload (JSON)</label>
-            <textarea id="simPayload" rows="10">{
-  "provider": "Stripe-Billing",
-  "event": "payment_intent.succeeded",
-  "amount": 99.00,
-  "currency": "usd",
-  "customer": {
-    "email": "adrian@terra.io",
-    "name": "Adrián"
-  },
-  "status": "succeeded"
-}</textarea>
+            <textarea id="simPayload" rows="10" placeholder='{"event": "payment_intent.succeeded", "amount": 99.00, "status": "succeeded", "customer": {"email": "user@terra.io"}}'></textarea>
           </div>
 
           <div class="form-group">
             <label>Developer Rules to Evaluate</label>
             <div class="form-group">
               <label>Filter Expression Rule</label>
-              <input type="text" id="simFilterRule" value="payload.amount >= 50 && payload.status == 'succeeded'">
+              <input type="text" id="simFilterRule" placeholder="e.g. payload.amount >= 50 && payload.status == 'succeeded'">
             </div>
             <div class="form-group">
               <label>Subject Mapping Expression</label>
-              <input type="text" id="simSubjectMap" value="payload.provider + ' — ' + payload.event">
+              <input type="text" id="simSubjectMap" placeholder="e.g. payload.provider + ' — ' + payload.event">
             </div>
             <button class="btn" onclick="runLiveSimulation()" style="margin-top: 8px;">▶️ Run Live Evaluation</button>
           </div>
@@ -627,17 +617,13 @@
         <div class="grid-container">
           <div class="form-group">
             <label>Template Code (HTML / Markdown with {{variable}})</label>
-            <textarea id="templateSource" rows="10" oninput="renderLiveTemplate()"><div style="font-family: 'Outfit', sans-serif; background: #0f2417; color: #e2f0d9; padding: 20px; border-radius: 10px; border: 1px solid #2d6a4f;">
-  <h3 style="color: #52b788; margin-top:0;">📢 {{subject}}</h3>
-  <p style="font-size: 15px;">{{message}}</p>
-  <div style="margin-top: 12px; padding: 8px; background: #143823; border-radius: 6px; font-size: 13px;">
-    <strong>Usuario:</strong> {{user}} • <strong>Prioridad:</strong> {{priority}}
-  </div>
-</div></textarea>
+            <textarea id="templateSource" rows="10" placeholder="Escribe o pega aquí tu código de plantilla HTML o Markdown usando {{variable}}..." oninput="renderLiveTemplate()"></textarea>
           </div>
           <div class="form-group">
             <label>Live Preview</label>
-            <div id="templatePreview" style="background: #07120b; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; min-height: 200px;"></div>
+            <div id="templatePreview" style="background: #07120b; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; min-height: 200px;">
+              <span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -732,15 +718,6 @@
     }
 
     async function initAuth() {
-      if (targetRegistry.length === 0) {
-        targetRegistry = DEMO_TARGETS;
-        localStorage.setItem('GRILLOUT_TARGETS', JSON.stringify(targetRegistry));
-      }
-      if (gatewaysList.length === 0) {
-        gatewaysList = DEMO_GATEWAYS;
-        localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
-      }
-
       renderTargetsList();
       renderGwTargetSelect();
       renderGatewaysList();
@@ -857,7 +834,7 @@
           origins: activeGwOrigins.length > 0 ? [...activeGwOrigins] : [{ alias: 'Custom Provider', url: 'https://api.empresa.com' }],
           hmacSecret,
           filter,
-          targets: activeGwTargets.length > 0 ? [...activeGwTargets] : ['💬 Discord-Production-Alerts', '📱 Slack-DevOps-Channel'],
+          targets: activeGwTargets.length > 0 ? [...activeGwTargets] : [],
           hits: 0,
           id: Date.now()
         };
@@ -923,7 +900,8 @@
       container.innerHTML = '';
       gatewaysList.forEach(g => {
         const gwUrl = `https://api.github.com/repos/${owner}/.grillout-storage/dispatches?channel=${g.channel}`;
-        const originsLabel = g.origins ? g.origins.map(o => `${o.alias}`).join(', ') : 'Custom Provider';
+        const originsLabel = g.origins && g.origins.length > 0 ? g.origins.map(o => `${o.alias}`).join(', ') : 'Custom Provider';
+        const targetsLabel = g.targets && g.targets.length > 0 ? g.targets.join(' • ') : 'No Targets Configured';
 
         container.innerHTML += `
           <div class="card" style="border: 1px solid var(--border-accent); background: rgba(15, 36, 23, 0.7);">
@@ -962,7 +940,7 @@
               <div class="flow-arrow">➔</div>
               <div class="flow-step">
                 <div class="flow-step-title">📢 3. Multicast Fanout</div>
-                <div class="flow-step-sub">${g.targets ? g.targets.join(' • ') : 'Discord • Slack'}</div>
+                <div class="flow-step-sub">${targetsLabel}</div>
               </div>
             </div>
           </div>
@@ -976,6 +954,11 @@
       const subjectMap = document.getElementById('simSubjectMap').value.trim();
       const resultBox = document.getElementById('simResult');
       const resultBody = document.getElementById('simResultBody');
+
+      if (!payloadRaw) {
+        showModal('Payload Requerido', 'Introduce un JSON de prueba en el simulador.', '⚠️');
+        return;
+      }
 
       let payload;
       try {
@@ -1311,6 +1294,11 @@
 
     function renderLiveTemplate() {
       const src = document.getElementById('templateSource').value;
+      if (!src) {
+        document.getElementById('templatePreview').innerHTML = '<span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>';
+        return;
+      }
+
       const sampleContext = {
         subject: 'Deployment Success',
         message: 'Application v1.2.0 deployed clean to production.',
