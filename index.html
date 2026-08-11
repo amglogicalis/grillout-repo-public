@@ -305,6 +305,58 @@
     </div>
   </div>
 
+  <!-- Dedicated Edit Gateway Modal Popup Container -->
+  <div id="editGwModalOverlay" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <span>✏️</span>
+        <span>Editar Webhook Gateway</span>
+      </div>
+      <div class="modal-body">
+        <form id="editGwForm" onsubmit="saveEditedGateway(event)">
+          <div class="form-group">
+            <label>Gateway / Channel Name (Readonly)</label>
+            <input type="text" id="modalEditGwChannel" readonly style="opacity: 0.7; cursor: not-allowed;">
+          </div>
+
+          <div class="form-section-title">📥 FASE 1: Orígenes Autorizados (Entradas)</div>
+          <div class="form-row">
+            <input type="text" id="modalEditSourceAlias" placeholder="Alias Origen (e.g. Webbl App)">
+            <input type="text" id="modalEditSourceUrl" placeholder="URL Origen (e.g. https://webbl.app/events)">
+            <button type="button" class="btn btn-secondary" onclick="addModalEditSourceOrigin()" style="white-space: nowrap;">➕ Sumar Origen</button>
+          </div>
+          <div id="modalEditOriginsChips" class="target-chips"></div>
+
+          <div class="form-section-title">🛡️ FASE 2: Seguridad & Reglas de Filtro JSON</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>🔐 Secret HMAC Key</label>
+              <input type="password" id="modalEditHmacSecret" placeholder="whsec_xxxxxxxxxxxx">
+            </div>
+            <div class="form-group">
+              <label>🔍 Expression Filter Rule</label>
+              <input type="text" id="modalEditFilter" placeholder="e.g. payload.amount > 50">
+            </div>
+          </div>
+
+          <div class="form-section-title">📢 FASE 3: Destinos Multicast (Salidas Transmitidas)</div>
+          <div class="form-row">
+            <select id="modalEditTargetSelect" style="flex: 1;">
+              <option value="">-- Seleccionar Destino --</option>
+            </select>
+            <button type="button" class="btn btn-secondary" onclick="addModalEditTarget()" style="white-space: nowrap;">➕ Sumar Destino</button>
+          </div>
+          <div id="modalEditTargetsChips" class="target-chips"></div>
+
+          <div class="modal-actions" style="margin-top: 24px;">
+            <button type="button" class="btn btn-secondary" onclick="closeEditGwModal()">Cancelar</button>
+            <button type="submit" class="btn">💾 Guardar Cambios del Gateway</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <header>
     <div class="brand">
       <img src="assets/logo_grillout.png" alt="Grillout Logo" onerror="this.src='../.terra/assets/logo_grillout.png'">
@@ -675,7 +727,11 @@
 
     let activeGwOrigins = [];
     let activeGwTargets = [];
+
+    let modalEditGwOrigins = [];
+    let modalEditGwTargets = [];
     let editingGwId = null;
+
     let cachedQueueData = {};
 
     const DEMO_TARGETS = [
@@ -820,10 +876,11 @@
 
     function renderGwTargetSelect() {
       const select = document.getElementById('gwRegisteredTargetSelect');
-      select.innerHTML = '<option value="">-- Seleccionar Destino del Target Registry --</option>';
-      targetRegistry.forEach(t => {
-        select.innerHTML += `<option value="${t.alias}">${t.alias} (${t.type})</option>`;
-      });
+      const editSelect = document.getElementById('modalEditTargetSelect');
+      const optHtml = '<option value="">-- Seleccionar Destino --</option>' + targetRegistry.map(t => `<option value="${t.alias}">${t.alias} (${t.type})</option>`).join('');
+
+      select.innerHTML = optHtml;
+      if (editSelect) editSelect.innerHTML = optHtml;
     }
 
     function createGateway(e) {
@@ -834,34 +891,18 @@
 
       if (!channel) return;
 
-      if (editingGwId) {
-        const index = gatewaysList.findIndex(g => g.id === editingGwId);
-        if (index !== -1) {
-          gatewaysList[index] = {
-            ...gatewaysList[index],
-            channel,
-            origins: [...activeGwOrigins],
-            filter,
-            hmacSecret,
-            targets: [...activeGwTargets]
-          };
-          editingGwId = null;
-          showModal('Gateway Actualizado', `Se han guardado los cambios para el Webhook Gateway <strong>${channel}</strong>.`, '✏️');
-        }
-      } else {
-        const newGw = {
-          channel,
-          origins: activeGwOrigins.length > 0 ? [...activeGwOrigins] : [{ alias: 'Custom Provider', url: 'https://api.empresa.com' }],
-          hmacSecret,
-          filter,
-          targets: activeGwTargets.length > 0 ? [...activeGwTargets] : [],
-          hits: 0,
-          id: Date.now()
-        };
+      const newGw = {
+        channel,
+        origins: activeGwOrigins.length > 0 ? [...activeGwOrigins] : [{ alias: 'Custom Provider', url: 'https://api.empresa.com' }],
+        hmacSecret,
+        filter,
+        targets: activeGwTargets.length > 0 ? [...activeGwTargets] : [],
+        hits: 0,
+        id: Date.now()
+      };
 
-        gatewaysList.push(newGw);
-        showModal('Developer Webhook Gateway Creado', `Se ha configurado el pipeline completo (Orígenes ➔ Filtro ➔ Destinos) para el canal <strong>${channel}</strong>.`, '⚡');
-      }
+      gatewaysList.push(newGw);
+      showModal('Developer Webhook Gateway Creado', `Se ha configurado el pipeline completo (Orígenes ➔ Filtro ➔ Destinos) para el canal <strong>${channel}</strong>.`, '⚡');
 
       localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
 
@@ -875,23 +916,105 @@
       renderGatewaysList();
     }
 
-    function editGateway(id) {
+    /* Modal Popup Gateway Editing Logic */
+    function openEditGatewayModal(id) {
       const gw = gatewaysList.find(g => g.id === id);
       if (!gw) return;
 
       editingGwId = gw.id;
-      document.getElementById('gwChannel').value = gw.channel;
-      document.getElementById('gwHmacSecret').value = gw.hmacSecret || '';
-      document.getElementById('gwFilter').value = gw.filter || '';
+      document.getElementById('modalEditGwChannel').value = gw.channel;
+      document.getElementById('modalEditHmacSecret').value = gw.hmacSecret || '';
+      document.getElementById('modalEditFilter').value = gw.filter || '';
 
-      activeGwOrigins = gw.origins ? [...gw.origins] : [];
-      activeGwTargets = gw.targets ? [...gw.targets] : [];
+      modalEditGwOrigins = gw.origins ? [...gw.origins] : [];
+      modalEditGwTargets = gw.targets ? [...gw.targets] : [];
 
-      renderGwOriginsChips();
-      renderGwTargetsChips();
+      renderModalEditOriginsChips();
+      renderModalEditTargetsChips();
+      renderGwTargetSelect();
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      showModal('Modo Edición Activado', `Modificando los parámetros del Gateway <strong>${gw.channel}</strong>. Ajusta Orígenes, Filtros o Destinos arriba y haz clic en Guardar.`, '✏️');
+      document.getElementById('editGwModalOverlay').classList.remove('hidden');
+    }
+
+    function closeEditGwModal() {
+      document.getElementById('editGwModalOverlay').classList.add('hidden');
+      editingGwId = null;
+    }
+
+    function addModalEditSourceOrigin() {
+      const alias = document.getElementById('modalEditSourceAlias').value.trim();
+      const url = document.getElementById('modalEditSourceUrl').value.trim();
+      if (!alias || !url) return;
+
+      modalEditGwOrigins.push({ alias, url });
+      document.getElementById('modalEditSourceAlias').value = '';
+      document.getElementById('modalEditSourceUrl').value = '';
+      renderModalEditOriginsChips();
+    }
+
+    function removeModalEditSourceOrigin(index) {
+      modalEditGwOrigins.splice(index, 1);
+      renderModalEditOriginsChips();
+    }
+
+    function renderModalEditOriginsChips() {
+      const container = document.getElementById('modalEditOriginsChips');
+      container.innerHTML = '';
+      modalEditGwOrigins.forEach((o, i) => {
+        container.innerHTML += `
+          <div class="chip">
+            <span>📥 ${o.alias} (${o.url})</span>
+            <span class="chip-remove" onclick="removeModalEditSourceOrigin(${i})">&times;</span>
+          </div>
+        `;
+      });
+    }
+
+    function addModalEditTarget() {
+      const select = document.getElementById('modalEditTargetSelect');
+      const val = select.value;
+      if (!val) return;
+
+      if (!modalEditGwTargets.includes(val)) {
+        modalEditGwTargets.push(val);
+        renderModalEditTargetsChips();
+      }
+    }
+
+    function removeModalEditTarget(index) {
+      modalEditGwTargets.splice(index, 1);
+      renderModalEditTargetsChips();
+    }
+
+    function renderModalEditTargetsChips() {
+      const container = document.getElementById('modalEditTargetsChips');
+      container.innerHTML = '';
+      modalEditGwTargets.forEach((t, i) => {
+        container.innerHTML += `
+          <div class="chip">
+            <span>📢 ${t}</span>
+            <span class="chip-remove" onclick="removeModalEditTarget(${i})">&times;</span>
+          </div>
+        `;
+      });
+    }
+
+    function saveEditedGateway(e) {
+      e.preventDefault();
+      if (!editingGwId) return;
+
+      const index = gatewaysList.findIndex(g => g.id === editingGwId);
+      if (index !== -1) {
+        gatewaysList[index].hmacSecret = document.getElementById('modalEditHmacSecret').value.trim();
+        gatewaysList[index].filter = document.getElementById('modalEditFilter').value.trim();
+        gatewaysList[index].origins = [...modalEditGwOrigins];
+        gatewaysList[index].targets = [...modalEditGwTargets];
+
+        localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
+        renderGatewaysList();
+        closeEditGwModal();
+        showModal('Gateway Actualizado', `Se han guardado los cambios para el Webhook Gateway <strong>${gatewaysList[index].channel}</strong>.`, '✏️');
+      }
     }
 
     function removeGateway(id) {
@@ -934,7 +1057,7 @@
                 </div>
               </div>
               <div style="display: flex; gap: 8px;">
-                <button class="btn btn-secondary" onclick="editGateway(${g.id})" style="padding: 6px 12px; font-size: 0.8rem;">✏️ Edit</button>
+                <button class="btn btn-secondary" onclick="openEditGatewayModal(${g.id})" style="padding: 6px 12px; font-size: 0.8rem;">✏️ Edit Gateway</button>
                 <button class="btn" onclick="copyGatewayUrl('${g.channel}')" style="padding: 6px 12px; font-size: 0.8rem;">📋 Copy Webhook URL</button>
                 <button class="btn btn-danger" onclick="removeGateway(${g.id})">Delete</button>
               </div>
