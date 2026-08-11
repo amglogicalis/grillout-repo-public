@@ -305,7 +305,7 @@
       border: none;
       border-radius: 6px;
       background: #07120b;
-      transition: transform 0.2s ease, width 0.2s ease;
+      transition: transform 0.15s ease, width 0.15s ease, height 0.15s ease;
       transform-origin: top left;
     }
 
@@ -329,6 +329,13 @@
     input[type="range"] {
       accent-color: var(--accent-lime);
       cursor: pointer;
+    }
+
+    /* Drag and Drop Zone Highlighting */
+    .drag-active {
+      border: 2px dashed var(--accent-lime) !important;
+      background: rgba(82, 183, 136, 0.15) !important;
+      box-shadow: 0 0 20px rgba(82, 183, 136, 0.3) !important;
     }
   </style>
 </head>
@@ -724,7 +731,8 @@
       <div class="card full-width">
         <div class="card-title">🎨 Gryllus Template Synthesizer (Motor de Plantillas Integrado)</div>
         <div class="help-tooltip">
-          🎨 Diseña plantillas HTML/Markdown con sustitución dinámica <code>{{variable}}</code> sin requerir servicios SaaS externos.
+          🎨 Diseña plantillas HTML/Markdown con sustitución dinámica <code>{{variable}}</code> sin requerir servicios SaaS externos.<br>
+          📦 <strong>Arrastrar y Soltar:</strong> Arrastra cualquier archivo <code>.html</code> o <code>.md</code> directamente sobre la caja de código para cargarlo en 1 segundo.
         </div>
         <div class="grid-container">
           <div class="form-group">
@@ -734,7 +742,8 @@
               <input type="file" id="templateFileInput" accept=".html,.htm,.md,.txt,.json" class="hidden" onchange="handleTemplateFileUpload(event)">
               <button type="button" class="btn btn-secondary" onclick="document.getElementById('templateFileInput').click()" style="padding: 4px 10px; font-size: 0.78rem;">📁 Cargar Archivo (.html, .md)</button>
             </div>
-            <textarea id="templateSource" rows="12" placeholder="Escribe o pega aquí tu código de plantilla HTML o Markdown usando {{variable}}..." oninput="renderLiveTemplate()"></textarea>
+            <!-- Textarea with Native Drag & Drop Zone -->
+            <textarea id="templateSource" rows="12" placeholder="Escribe, pega o arrastra un archivo de plantilla HTML/Markdown aquí..." oninput="renderLiveTemplate()"></textarea>
           </div>
 
           <div class="form-group">
@@ -763,7 +772,7 @@
               </div>
             </div>
 
-            <div class="template-sandbox-wrapper">
+            <div class="template-sandbox-wrapper" id="templateSandboxWrapper">
               <div id="templatePreview" style="height: 100%; width: 100%;">
                 <span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>
               </div>
@@ -807,6 +816,7 @@
     let editingOriginalChannel = '';
 
     let currentZoomLevel = 100;
+    let currentDeviceMode = 'desktop';
 
     let cachedQueueData = {};
 
@@ -873,6 +883,7 @@
       renderTargetsList();
       renderGwTargetSelect();
       renderGatewaysList();
+      initTemplateDragAndDrop();
 
       if (pat) {
         document.getElementById('githubPat').value = pat;
@@ -1625,11 +1636,10 @@
       const iframe = document.getElementById('templateSandboxIframe');
       iframe.srcdoc = rendered;
 
-      // Apply zoom if set
       applyTemplateZoom();
     }
 
-    /* Template Synthesizer Features: Zoom, Device Presets, Slider Scroll, File Upload */
+    /* Template Synthesizer Features: Zoom, Device Presets, Slider Scroll, File Upload & Drag 'n' Drop */
     function adjustTemplateZoom(delta) {
       currentZoomLevel = Math.max(50, Math.min(200, currentZoomLevel + delta));
       applyTemplateZoom();
@@ -1648,12 +1658,21 @@
       if (iframe) {
         const scale = currentZoomLevel / 100;
         iframe.style.transform = `scale(${scale})`;
-        iframe.style.width = scale === 1 ? '100%' : `${100 / scale}%`;
-        iframe.style.height = scale === 1 ? '100%' : `${100 / scale}%`;
+
+        if (currentDeviceMode === 'mobile') {
+          iframe.style.width = '375px';
+          iframe.style.margin = '0 auto';
+        } else {
+          iframe.style.width = scale === 1 ? '100%' : `${(100 / scale).toFixed(2)}%`;
+          iframe.style.margin = '0';
+        }
+
+        iframe.style.height = scale === 1 ? '100%' : `${(100 / scale).toFixed(2)}%`;
       }
     }
 
     function setIframeDevice(device) {
+      currentDeviceMode = device;
       const iframe = document.getElementById('templateSandboxIframe');
       if (!iframe) return;
 
@@ -1664,7 +1683,11 @@
       } else {
         iframe.style.width = '100%';
         iframe.style.margin = '0';
+        iframe.style.display = 'block';
       }
+
+      // Re-apply zoom to recalculate clean bounds immediately
+      applyTemplateZoom();
     }
 
     function scrollSandboxIframe(percent) {
@@ -1682,7 +1705,10 @@
     function handleTemplateFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
+      processUploadedFile(file);
+    }
 
+    function processUploadedFile(file) {
       const reader = new FileReader();
       reader.onload = function(e) {
         const content = e.target.result;
@@ -1691,6 +1717,39 @@
         showModal('Archivo Cargado Exitosamente', `Se ha importado el código de <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB) en el editor.`, '📁');
       };
       reader.readAsText(file);
+    }
+
+    /* Native Drag & Drop Logic for Template Synthesizer */
+    function initTemplateDragAndDrop() {
+      const textarea = document.getElementById('templateSource');
+      const wrapper = document.getElementById('templateSandboxWrapper');
+
+      const dropTargets = [textarea, wrapper].filter(Boolean);
+
+      dropTargets.forEach(target => {
+        target.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          target.classList.add('drag-active');
+        });
+
+        target.addEventListener('dragleave', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          target.classList.remove('drag-active');
+        });
+
+        target.addEventListener('drop', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          target.classList.remove('drag-active');
+
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            processUploadedFile(file);
+          }
+        });
+      });
     }
 
     function saveSettings() {
