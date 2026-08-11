@@ -272,6 +272,21 @@
     .modal-header { display: flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
     .modal-body { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; margin-bottom: 20px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* Template Preview Sandbox Container Bugfix */
+    .template-sandbox-wrapper {
+      background: #07120b;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      min-height: 350px;
+      max-height: 520px;
+      overflow: auto;
+      contain: content;
+      box-sizing: border-box;
+      word-break: break-word;
+      position: relative;
+    }
   </style>
 </head>
 <body>
@@ -622,9 +637,11 @@
             <textarea id="templateSource" rows="10" placeholder="Escribe o pega aquí tu código de plantilla HTML o Markdown usando {{variable}}..." oninput="renderLiveTemplate()"></textarea>
           </div>
           <div class="form-group">
-            <label>Live Preview</label>
-            <div id="templatePreview" style="background: #07120b; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; min-height: 200px;">
-              <span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>
+            <label>Live Preview Sandbox</label>
+            <div class="template-sandbox-wrapper">
+              <div id="templatePreview">
+                <span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>
+              </div>
             </div>
           </div>
         </div>
