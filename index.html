@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gryllus Studio — GRILLOUT 🦗 | Terra Ecosystem</title>
+  <title>Gryllus Studio — GRILLOUT | Terra Ecosystem</title>
   <link rel="icon" type="image/png" href="assets/logo_grillout.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -412,7 +412,7 @@
       <img src="assets/logo_grillout.png" alt="Grillout Logo" onerror="this.src='../.terra/assets/logo_grillout.png'">
       <div class="brand-text">
         <h1>Gryllus Studio</h1>
-        <p>GRILLOUT 🦗 — Ephemeral Async Queues & Multicast Fanout ($0)</p>
+        <p>GRILLOUT — Ephemeral Async Queues & Multicast Fanout ($0)</p>
       </div>
     </div>
 
@@ -1553,7 +1553,6 @@
           return;
         }
 
-        // Update status to DELIVERED
         queueData.chirps = (queueData.chirps || []).map(c => ({
           ...c,
           status: 'DELIVERED',
@@ -1570,7 +1569,6 @@
           })
         });
 
-        // Trigger dispatch signal for remote runners
         await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/dispatches`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
