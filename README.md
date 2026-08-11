@@ -1,92 +1,177 @@
-<p align="center">
-  <img src="assets/logo_grillout.png" alt="Grillout Logo" width="220" />
-</p>
+# 🦗 GRILLOUT (`grillout`)
 
-<h1 align="center">GRILLOUT 🦗</h1>
+<div align="center">
+  <img src="assets/logo_grillout.png" alt="GRILLOUT Logo" width="160" />
+  <h1>Gryllus Studio — GRILLOUT Engine</h1>
+  <p><strong>Ephemeral Async Queues, Multicast Stridulation & Zero-Cost Notification Fanout ($0 Infrastructure)</strong></p>
 
-<p align="center">
-  <strong>Motor de Colas Asíncronas, Mensajería Efímera & Notificaciones Multicanal ($0)</strong><br>
-  <em>Parte del Ecosistema Terra — Infraestructura Fantasma Serverless e Inmutable sobre GitHub Engine</em>
-</p>
-
-<p align="center">
-  <a href="https://github.com/amglogicalis/Terra"><strong>Ecosistema Terra</strong></a> •
-  <a href="https://amglogicalis.github.io/grillout-repo-public/"><strong>Gryllus Studio Console</strong></a> •
-  <a href="#-características-principales"><strong>Características</strong></a> •
-  <a href="#-instalación-y-uso"><strong>Instalación</strong></a>
-</p>
+  [![NPM Version](https://img.shields.io/npm/v/grillout?color=52b788&style=for-the-badge)](https://www.npmjs.com/package/grillout)
+  [![License](https://img.shields.io/badge/license-MIT-2d6a4f?style=for-the-badge)](LICENSE)
+  [![Terra Ecosystem](https://img.shields.io/badge/Ecosystem-Terra-1b4332?style=for-the-badge)](https://github.com/amglogicalis/Terra)
+  [![Cost](https://img.shields.io/badge/Infrastructure_Cost-$0_Marginal-74c69d?style=for-the-badge)]()
+</div>
 
 ---
 
-## 🦗 Visión y Filosofía
+## 🌐 Live Interactive Web Console
 
-**GRILLOUT** es el 12º Titán del Ecosistema Terra. Inspirado en la comunicación rítmica y eficiente de los grillos (*Gryllus*), reemplaza plataformas de colas y mensajería de pago (SQS, BullMQ, RabbitMQ, SendGrid) operando **100% a coste $0 e independencia total para el usuario final**.
+Experience the full power of Gryllus Studio directly in your browser:
 
-No mantiene ningún servidor "escuchando" o consumiendo cómputo en reposo. Las aplicaciones encolan intenciones (*Chirps*) en milisegundos escribiendo en almacenes de estado pasivos (`.grillout-storage` en Git DB), y el enjambre de ejecutores efímeros sólo se despierta (canta) cuando hay un lote de notificaciones que entregar.
+👉 **[Launch Live Online Web Console](https://amglogicalis.github.io/grillout-repo-public/)**
 
----
-
-## ⚡ Características Principales
-
-1. **📢 Stridulation Echo & Multicast Fanout**: Difusión de un solo payload JSON a múltiples destinos en paralelo: Discord Webhooks, Slack Webhooks, Telegram Bot API, Custom HTTP Webhooks, Email ($0 via Actions/SMTP) y GitHub Issues.
-2. **⚡ Auto-Tuning Stridulation Batcher**: Gateway inteligente que dispara un `repository_dispatch` inmediato ante ráfagas de tráfico, o acumula los Chirps pasivamente en tráfico bajo para optimizar los minutos de Actions a cero.
-3. **🎯 Gryllus FIFO & Chirp Deduplicator**: Deduplicación por `dedupKey` (SHA-256) + ventana temporal (`dedupWindowSec`) y secuenciación FIFO estricta por partición `groupKey`.
-4. **🔓 Gryllus Lease Locks & Partial Batch Verdicts**: Bloqueos anti-colisiones (`leasedUntil`) y veredictos parciales de lote para purgar únicamente los mensajes procesados con éxito.
-5. **⏳ Temporal Chirp Delays & Priority Swarms**: Mensajes programados a futuro (`deliverAt`) y priorización VIP para alertas de seguridad críticas.
-6. **🛡️ HoneyChirp Poison Shield**: Detección pasiva anti-bots y cuarentena de payloads maliciosos sin falsos positivos.
-7. **🎨 Gryllus Template Synthesizer & Studio Visual**: Motor de plantillas Markdown/HTML integrado con vista previa en vivo y consola web Glassmorphic 24/7 en GitHub Pages en tono **Verde Bosque Oscuro** (`#1b4332`).
+<div align="center">
+  <img src="assets/console_preview_grillout.PNG" alt="Gryllus Studio Console Preview" width="100%" style="border-radius: 12px; border: 1px solid #2d6a4f; box-shadow: 0 0 25px rgba(82, 183, 136, 0.2);" />
+</div>
 
 ---
 
-## 🛠️ Instalación y Uso
+## 🌟 Key Modules & Core Features
 
-### Instalación del SDK o CLI
+### 🎛️ 1. Active Stridulation Channels & Real-Time Queue Monitor
+- Real-time metrics parsing directly from `.grillout-storage` vault files.
+- Track pending Chirps, delayed deliveries, leases, DLQ quarantines, and max priority.
+- **⚡ Live 1-Click Batch Consume**: Execute queue consumption and dispatch fanout in real-time.
+- **👁️ Live Inspect JSON**: Query live queue JSON payloads and audit trails directly via GitHub REST API.
+- **🗑️ Delete Queue**: Purge temporary queue files with one click.
+
+### 📡 2. Webhook Gateways & End-to-End Flow Registry
+Configurable **3-Phase Pipeline Architecture**:
+1. **📥 Authorized Origins**: Accumulate inputs from microservices (Sinchlor, Rolla, Stripe, GitHub, Webbl).
+2. **🛡️ Security & Filter Rules**: HMAC SHA-256 signature verification & JavaScript expression rules (e.g. `payload.amount > 50`).
+3. **📢 Multicast Fanout**: Route incoming webhooks to multiple target channels automatically.
+- Dedicated glassmorphic modal popup for editing and channel renaming with collision protection.
+
+### 🧪 3. Developer Webhook Inspector & Live Expression Simulator
+- Test incoming raw JSON payloads from Stripe, GitHub, or custom services.
+- Evaluate filter expression rules and subject mapping expressions in real time before going to production.
+
+### 📢 4. Multicast Chirp Publisher
+- Dispatch single notifications simultaneously to **Discord**, **Slack**, **Telegram**, **Custom Webhooks**, **Email**, and **GitHub Issues**.
+- Supports **FIFO GroupKeys** for strict chronological sequential ordering per resource/user.
+- Priority tiers: `CRITICAL`, `VIP`, `NORMAL`, and `LOW`.
+
+### 📍 5. Destination Endpoints & Target Registry
+- Central manager for webhook URLs, bot tokens, and email recipients.
+- Reusable destination aliases to simplify multi-channel publishing.
+
+### ⚙️ 6. Module Controls & Security Shields
+- **🛡️ HoneyChirp PoisonShield**: Passive anti-bot shield that quarantines XSS, SQLi, and malicious command payloads before consuming runners.
+- **🎯 Gryllus SHA-256 Deduplicator**: Prevents duplicate notification processing within a configurable window (default 300s).
+
+### 🎨 7. Gryllus Template Synthesizer
+- Integrated HTML & Markdown template engine with dynamic variable substitution `{{variable}}`.
+- **Zoom Controls**: Scale preview from `50%` to `200%`.
+- **Device View Presets**: Instantly switch between `📱 Mobile (375px)` and `💻 Desktop (100%)`.
+- **Vertical Scroll Range Slider**: Smooth vertical scrolling for tall templates.
+- **📁 File Loader & 📦 Native Drag & Drop**: Drag `.html`, `.md`, or `.txt` files directly onto the editor to load code instantly.
+
+### 🔄 8. Dead-Letter Queue (DLQ) & Forensic Replay
+- Inspect failed or quarantined Chirps with full error tracebacks.
+- **1-Click Replay**: Re-enqueue historical or quarantined messages cleanly.
+
+---
+
+## ⚡ Global CLI Tool Usage
+
+Install globally via npm or run instantly using `npx`:
+
 ```bash
-npm install @terra/grillout
-# o instalar el CLI global:
-npm install -g grillout-cli
+npm install -g grillout
 ```
 
-### Publicar un Chirp desde Node.js TypeScript
+### CLI Command Reference
+
+```bash
+# 🎛️ Queue Management
+grillout queue list                            # List all active queues & live stats
+grillout queue consume --channel <name>        # Consume pending batch live in queue
+grillout queue delete --channel <name>         # Delete queue and DLQ files
+grillout queue inspect --channel <name>        # Inspect raw JSON content of queue
+
+# 📡 Webhook Gateways
+grillout gateway list                          # List registered Webhook Gateways
+grillout gateway create --channel <name> [opts]# Create new Webhook Gateway
+grillout gateway edit --channel <name> [opts]  # Edit or rename Webhook Gateway
+grillout gateway delete --channel <name>       # Delete Webhook Gateway
+grillout gateway seed                          # Seed 3 demo Webhook Gateways
+
+# 📍 Target Endpoints Registry
+grillout target list                           # List registered Target Endpoints
+grillout target add --alias <n> --endpoint <u> # Add destination Target Endpoint
+grillout target delete --alias <name>          # Delete Target Endpoint
+grillout target seed                           # Seed 6 demo Target Endpoints
+
+# 📢 Chirps & Multicast Dispatch
+grillout chirp publish --channel <n> [opts]    # Publish Multicast Chirp
+grillout chirp replay --channel <n> --id <id>  # 1-Click Replay quarantined Chirp
+
+# 🧪 Developer Simulator & Templates
+grillout simulator run --payload <json> [opts] # Run live expression filter simulation
+grillout template render --file <path> [opts]  # Render HTML/Markdown template
+```
+
+---
+
+## 📦 Node.js / TypeScript SDK Usage
+
+Install in your Node.js or TypeScript project:
+
+```bash
+npm install grillout
+```
+
+### Programmatic Code Example
+
 ```typescript
-import { Grillout } from '@terra/grillout';
+import { Grillout } from 'grillout';
 
-const grillout = new Grillout();
+const grillout = new Grillout({
+  githubToken: process.env.GRILLOUT_PAT,
+  poisonShieldEnabled: true,
+  defaultDedupWindowSec: 300
+});
 
-await grillout.publish({
-  channel: 'user-onboarding',
+// 1. Publish a Multicast Chirp
+const res = await grillout.publish({
+  channel: 'billing-events',
   payload: {
-    subject: '¡Bienvenido a bordo!',
-    message: 'Tu cuenta ha sido activada con éxito.',
-    userId: 99
+    amount: 150.00,
+    status: 'succeeded',
+    customer: 'user@terra.io'
   },
-  priority: 'VIP',
+  priority: 'CRITICAL',
   groupKey: 'user_99',
   targets: [
     { type: 'discord', endpoint: 'https://discord.com/api/webhooks/...' },
     { type: 'slack', endpoint: 'https://hooks.slack.com/services/...' }
   ]
 });
-```
 
-### Uso desde la CLI
-```bash
-# Publicar un mensaje
-grillout pub user-onboarding '{"subject":"Alerta","message":"Hola"}' --priority VIP
+console.log('Chirp published:', res.chirp.id);
 
-# Listar canales activos
-grillout list
+// 2. Consume live batch
+const consumed = await grillout.consumeQueue('billing-events');
+console.log(`Delivered ${consumed.deliveredCount} chirps.`);
 
-# Arrancar la consola web local
-grillout studio
+// 3. Evaluate filter expression programmatically
+const sim = grillout.runSimulation(
+  { amount: 150, status: 'succeeded' },
+  "payload.amount >= 50 && payload.status == 'succeeded'"
+);
+
+console.log('Simulation verdict:', sim.status);
 ```
 
 ---
 
-## 🎨 Gryllus Studio Web Console
-Accede a la consola web interactiva 24/7 alojada en GitHub Pages:  
-👉 **[amglogicalis.github.io/grillout-repo-public/](https://amglogicalis.github.io/grillout-repo-public/)**
+## 🛡️ Security & Privacy Architecture
+
+- **Zero Credential Leaks**: GRILLOUT does not store or hardcode tokens.
+- Authentication credentials (`GRILLOUT_PAT`, `GITHUB_TOKEN`) are read exclusively at runtime from your environment variables or command flags.
+- All network operations communicate over HTTPS via GitHub REST API.
 
 ---
 
-*Desarrollado con rigor técnico y pasión por el Ecosistema Terra.* 🦗
+## 📄 License
+
+MIT © **Terra Ecosystem** — Built with $0 marginal infrastructure.
