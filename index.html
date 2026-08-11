@@ -1511,6 +1511,7 @@
                 <div style="display: flex; gap: 6px;">
                   <button class="btn" onclick="inspectQueue('${q.channel}')" style="padding: 4px 8px; font-size: 0.78rem;">👁️ Inspect JSON</button>
                   <button class="btn btn-secondary" onclick="triggerConsume('${q.channel}')" style="padding: 4px 8px; font-size: 0.78rem;">⚡ Consume</button>
+                  <button class="btn btn-danger" onclick="deleteQueue('${q.channel}')">🗑️ Delete</button>
                 </div>
               </td>
             </tr>
@@ -1521,13 +1522,155 @@
       }
     }
 
-    function inspectQueue(channel) {
-      const chirps = cachedQueueData[channel] || [];
-      const jsonStr = JSON.stringify(chirps, null, 2);
-      showModal(`Inspección de Cola JSON: ${channel}`, `
-        <p style="margin-bottom: 10px; font-size: 0.82rem; color: var(--text-muted);">Mensajes y Payloads almacenados en la cola activa (${chirps.length} elementos):</p>
-        <pre style="background: rgba(0, 0, 0, 0.6); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-code); font-size: 0.78rem; color: var(--accent-lime); max-height: 350px; overflow-y: auto;">${jsonStr || '[]'}</pre>
-      `, '👁️');
+    async function triggerConsume(channel) {
+      if (!pat || !authenticatedUser) {
+        showModal('Autenticación Requerida', 'Por favor autentícate con tu GitHub PAT primero.', '🔒');
+        return;
+      }
+
+      showModal('⚡ Procesando Lote...', `Ejecutando consumo y fanout multicast para la cola <strong>${channel}</strong>...`, '⚡');
+
+      try {
+        const owner = authenticatedUser.login;
+        const queueFile = `queues/${channel}.json`;
+
+        const res = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, {
+          headers: { Authorization: `Bearer ${pat}` }
+        });
+
+        if (!res.ok) {
+          showModal('Cola Vacía', `La cola <strong>${channel}</strong> no contiene mensajes pendientes.`, 'ℹ️');
+          return;
+        }
+
+        const fileData = await res.json();
+        const decoded = atob(fileData.content.replace(/\n/g, ''));
+        const queueData = JSON.parse(decoded);
+        const pendingChirps = (queueData.chirps || []).filter(c => c.status === 'PENDING' || c.status === 'LEASED');
+
+        if (pendingChirps.length === 0) {
+          showModal('Sin Mensajes Pendientes', `Todos los mensajes de <strong>${channel}</strong> ya han sido entregados o procesados.`, 'ℹ️');
+          return;
+        }
+
+        // Update status to DELIVERED
+        queueData.chirps = (queueData.chirps || []).map(c => ({
+          ...c,
+          status: 'DELIVERED',
+          updatedAt: new Date().toISOString()
+        }));
+
+        await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `fix(consume): process batch of ${pendingChirps.length} chirps in ${channel}`,
+            content: btoa(JSON.stringify(queueData, null, 2)),
+            sha: fileData.sha
+          })
+        });
+
+        // Trigger dispatch signal for remote runners
+        await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/dispatches`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_type: 'grillout-batch-dispatch',
+            client_payload: { channel, count: pendingChirps.length }
+          })
+        });
+
+        showModal('Lote Consumido y Entregado', `Se han procesado y entregado <strong>${pendingChirps.length}</strong> Chirps del canal <strong>${channel}</strong>.`, '✅');
+        await loadQueues();
+      } catch (err) {
+        showModal('Error al Consumir Lote', err.message, '❌');
+      }
+    }
+
+    async function deleteQueue(channel) {
+      if (!pat || !authenticatedUser) {
+        showModal('Autenticación Requerida', 'Por favor autentícate con tu GitHub PAT primero.', '🔒');
+        return;
+      }
+
+      const owner = authenticatedUser.login;
+      const queueFile = `queues/${channel}.json`;
+      const dlqFile = `queues/${channel}_dlq.json`;
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, {
+          headers: { Authorization: `Bearer ${pat}` }
+        });
+
+        if (res.ok) {
+          const fileData = await res.json();
+          await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${queueFile}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: `cleanup: delete queue ${channel}`,
+              sha: fileData.sha
+            })
+          });
+        }
+
+        try {
+          const dlqRes = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${dlqFile}`, {
+            headers: { Authorization: `Bearer ${pat}` }
+          });
+          if (dlqRes.ok) {
+            const dlqData = await dlqRes.json();
+            await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/${dlqFile}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${pat}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: `cleanup: delete DLQ for ${channel}`,
+                sha: dlqData.sha
+              })
+            });
+          }
+        } catch {}
+
+        showModal('Cola Eliminada', `La cola <strong>${channel}</strong> y sus recursos han sido eliminados de .grillout-storage.`, '🗑️');
+        await loadQueues();
+      } catch (err) {
+        showModal('Error al Eliminar Cola', err.message, '❌');
+      }
+    }
+
+    async function inspectQueue(channel) {
+      if (!pat || !authenticatedUser) {
+        const chirps = cachedQueueData[channel] || [];
+        showModal(`Inspección de Cola JSON: ${channel}`, `
+          <p style="margin-bottom: 10px; font-size: 0.82rem; color: var(--text-muted);">Mensajes y Payloads almacenados en memoria local (${chirps.length} elementos):</p>
+          <pre style="background: rgba(0, 0, 0, 0.6); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-code); font-size: 0.78rem; color: var(--accent-lime); max-height: 350px; overflow-y: auto;">${JSON.stringify(chirps, null, 2) || '[]'}</pre>
+        `, '👁️');
+        return;
+      }
+
+      try {
+        const owner = authenticatedUser.login;
+        const res = await fetch(`https://api.github.com/repos/${owner}/.grillout-storage/contents/queues/${channel}.json`, {
+          headers: { Authorization: `Bearer ${pat}` }
+        });
+
+        if (!res.ok) {
+          showModal(`Inspección de Cola JSON: ${channel}`, `<p style="color: var(--text-muted);">La cola no existe o no tiene mensajes.</p>`, '👁️');
+          return;
+        }
+
+        const fileData = await res.json();
+        const decoded = atob(fileData.content.replace(/\n/g, ''));
+        const queueJson = JSON.parse(decoded);
+        const jsonStr = JSON.stringify(queueJson, null, 2);
+
+        showModal(`Inspección de Cola JSON en Vivo: ${channel}`, `
+          <p style="margin-bottom: 10px; font-size: 0.82rem; color: var(--text-muted);">Contenido JSON en tiempo real obtenido directamente desde <code>.grillout-storage/queues/${channel}.json</code> (${queueJson.chirps ? queueJson.chirps.length : 0} elementos):</p>
+          <pre style="background: rgba(0, 0, 0, 0.6); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-code); font-size: 0.78rem; color: var(--accent-lime); max-height: 350px; overflow-y: auto;">${jsonStr}</pre>
+        `, '👁️');
+      } catch (err) {
+        showModal('Error al Inspeccionar Cola', err.message, '❌');
+      }
     }
 
     async function publishChirp(e) {
@@ -1686,7 +1829,6 @@
         iframe.style.display = 'block';
       }
 
-      // Re-apply zoom to recalculate clean bounds immediately
       applyTemplateZoom();
     }
 
