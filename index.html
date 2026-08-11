@@ -273,24 +273,62 @@
     .modal-body { font-size: 0.9rem; color: var(--text-main); line-height: 1.6; margin-bottom: 20px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
-    /* Template Preview Sandboxed Iframe Container */
+    /* Template Toolbar & Sandboxed Iframe Container */
+    .template-toolbar {
+      background: rgba(15, 36, 23, 0.9);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .template-sandbox-wrapper {
       background: #07120b;
       border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 6px;
+      border-radius: 0 0 10px 10px;
+      padding: 4px;
       height: 480px;
       box-sizing: border-box;
       position: relative;
       overflow: hidden;
+      display: flex;
     }
 
     .template-sandbox-iframe {
       width: 100%;
       height: 100%;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #07120b;
+      transition: transform 0.2s ease, width 0.2s ease;
+      transform-origin: top left;
+    }
+
+    .toolbar-group { display: flex; align-items: center; gap: 6px; }
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .toolbar-btn:hover { background: rgba(82, 183, 136, 0.2); border-color: var(--accent-lime); }
+
+    .slider-container { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted); }
+    input[type="range"] {
+      accent-color: var(--accent-lime);
+      cursor: pointer;
     }
   </style>
 </head>
@@ -690,13 +728,43 @@
         </div>
         <div class="grid-container">
           <div class="form-group">
-            <label>Template Code (HTML / Markdown with {{variable}})</label>
-            <textarea id="templateSource" rows="10" placeholder="Escribe o pega aquí tu código de plantilla HTML o Markdown usando {{variable}}..." oninput="renderLiveTemplate()"></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label>Template Code (HTML / Markdown with {{variable}})</label>
+              <!-- Native File Upload Button -->
+              <input type="file" id="templateFileInput" accept=".html,.htm,.md,.txt,.json" class="hidden" onchange="handleTemplateFileUpload(event)">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('templateFileInput').click()" style="padding: 4px 10px; font-size: 0.78rem;">📁 Cargar Archivo (.html, .md)</button>
+            </div>
+            <textarea id="templateSource" rows="12" placeholder="Escribe o pega aquí tu código de plantilla HTML o Markdown usando {{variable}}..." oninput="renderLiveTemplate()"></textarea>
           </div>
+
           <div class="form-group">
             <label>Live Preview Sandboxed Frame</label>
+
+            <!-- Visualizer Interactive Controls Toolbar -->
+            <div class="template-toolbar">
+              <div class="toolbar-group">
+                <span style="font-size: 0.78rem; font-weight: bold; color: var(--accent-lime);">🔍 Zoom:</span>
+                <button class="toolbar-btn" onclick="adjustTemplateZoom(-10)">-</button>
+                <span id="zoomPercentage" style="font-size: 0.78rem; font-family: var(--font-code); color: #fff;">100%</span>
+                <button class="toolbar-btn" onclick="adjustTemplateZoom(10)">+</button>
+                <button class="toolbar-btn" onclick="resetTemplateZoom()">Reset</button>
+              </div>
+
+              <!-- Device View Presets -->
+              <div class="toolbar-group">
+                <button class="toolbar-btn" onclick="setIframeDevice('mobile')">📱 Mobile</button>
+                <button class="toolbar-btn" onclick="setIframeDevice('desktop')">💻 Desktop</button>
+              </div>
+
+              <!-- Scroll Position Range Slider Bar -->
+              <div class="slider-container">
+                <span>↕️ Desplazamiento:</span>
+                <input type="range" id="sandboxScrollSlider" min="0" max="100" value="0" style="width: 90px;" oninput="scrollSandboxIframe(this.value)">
+              </div>
+            </div>
+
             <div class="template-sandbox-wrapper">
-              <div id="templatePreview" style="height: 100%;">
+              <div id="templatePreview" style="height: 100%; width: 100%;">
                 <span style="color: var(--text-muted); font-size: 0.88rem;">Espera código de plantilla para visualizar en tiempo real...</span>
               </div>
             </div>
@@ -737,6 +805,8 @@
     let modalEditGwTargets = [];
     let editingGwId = null;
     let editingOriginalChannel = '';
+
+    let currentZoomLevel = 100;
 
     let cachedQueueData = {};
 
@@ -1020,7 +1090,6 @@
       const newChannel = document.getElementById('modalEditGwChannel').value.trim();
       if (!newChannel) return;
 
-      // Check for name collisions with other existing gateways
       if (newChannel !== editingOriginalChannel && gatewaysList.some(g => g.channel === newChannel && g.id !== editingGwId)) {
         showModal('Colisión de Nombres', `Ya existe otro Gateway con el nombre <strong>${newChannel}</strong>. Por favor usa un nombre único.`, '⚠️');
         return;
@@ -1036,7 +1105,6 @@
         gatewaysList[index].origins = [...modalEditGwOrigins];
         gatewaysList[index].targets = [...modalEditGwTargets];
 
-        // Migrate local queue cache reference if renamed
         if (isRenamed && cachedQueueData[editingOriginalChannel]) {
           cachedQueueData[newChannel] = cachedQueueData[editingOriginalChannel];
           delete cachedQueueData[editingOriginalChannel];
@@ -1382,7 +1450,6 @@
 
           const entry = channelsMap.get(channelName);
 
-          // Fetch actual JSON file content for 100% precision
           try {
             const contentRes = await fetch(f.download_url, {
               headers: { Authorization: `Bearer ${pat}` }
@@ -1554,10 +1621,76 @@
 
       let rendered = src.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_, key) => sampleContext[key] || '');
 
-      // 100% Isolated Sandboxed Iframe (Prevents ALL CSS & DOM leakage into host site)
       container.innerHTML = `<iframe id="templateSandboxIframe" class="template-sandbox-iframe" sandbox="allow-scripts allow-same-origin"></iframe>`;
       const iframe = document.getElementById('templateSandboxIframe');
       iframe.srcdoc = rendered;
+
+      // Apply zoom if set
+      applyTemplateZoom();
+    }
+
+    /* Template Synthesizer Features: Zoom, Device Presets, Slider Scroll, File Upload */
+    function adjustTemplateZoom(delta) {
+      currentZoomLevel = Math.max(50, Math.min(200, currentZoomLevel + delta));
+      applyTemplateZoom();
+    }
+
+    function resetTemplateZoom() {
+      currentZoomLevel = 100;
+      applyTemplateZoom();
+    }
+
+    function applyTemplateZoom() {
+      const iframe = document.getElementById('templateSandboxIframe');
+      const label = document.getElementById('zoomPercentage');
+      if (label) label.textContent = `${currentZoomLevel}%`;
+
+      if (iframe) {
+        const scale = currentZoomLevel / 100;
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.width = scale === 1 ? '100%' : `${100 / scale}%`;
+        iframe.style.height = scale === 1 ? '100%' : `${100 / scale}%`;
+      }
+    }
+
+    function setIframeDevice(device) {
+      const iframe = document.getElementById('templateSandboxIframe');
+      if (!iframe) return;
+
+      if (device === 'mobile') {
+        iframe.style.width = '375px';
+        iframe.style.margin = '0 auto';
+        iframe.style.display = 'block';
+      } else {
+        iframe.style.width = '100%';
+        iframe.style.margin = '0';
+      }
+    }
+
+    function scrollSandboxIframe(percent) {
+      const iframe = document.getElementById('templateSandboxIframe');
+      if (!iframe || !iframe.contentWindow) return;
+
+      try {
+        const doc = iframe.contentWindow.document;
+        const maxScroll = doc.documentElement.scrollHeight - iframe.contentWindow.innerHeight;
+        const targetPos = (percent / 100) * maxScroll;
+        iframe.contentWindow.scrollTo({ top: targetPos, behavior: 'smooth' });
+      } catch {}
+    }
+
+    function handleTemplateFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        document.getElementById('templateSource').value = content;
+        renderLiveTemplate();
+        showModal('Archivo Cargado Exitosamente', `Se ha importado el código de <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB) en el editor.`, '📁');
+      };
+      reader.readAsText(file);
     }
 
     function saveSettings() {
