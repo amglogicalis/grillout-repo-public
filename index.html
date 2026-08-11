@@ -315,13 +315,13 @@
     <div class="modal-card" style="max-width: 680px;">
       <div class="modal-header">
         <span>✏️</span>
-        <span>Editar Webhook Gateway</span>
+        <span>Editar / Renombrar Webhook Gateway</span>
       </div>
       <div class="modal-body">
         <form id="editGwForm" onsubmit="saveEditedGateway(event)">
           <div class="form-group">
-            <label>Gateway / Channel Name (Readonly)</label>
-            <input type="text" id="modalEditGwChannel" readonly style="opacity: 0.7; cursor: not-allowed;">
+            <label>Gateway / Channel Name (Nombre del Canal)</label>
+            <input type="text" id="modalEditGwChannel" placeholder="e.g. alertas-produccion" required>
           </div>
 
           <div class="form-section-title">📥 FASE 1: Orígenes Autorizados (Entradas)</div>
@@ -736,6 +736,7 @@
     let modalEditGwOrigins = [];
     let modalEditGwTargets = [];
     let editingGwId = null;
+    let editingOriginalChannel = '';
 
     let cachedQueueData = {};
 
@@ -896,6 +897,11 @@
 
       if (!channel) return;
 
+      if (gatewaysList.some(g => g.channel === channel)) {
+        showModal('Nombre de Canal Existente', `Ya existe un Gateway con el nombre <strong>${channel}</strong>. Elige un nombre distinto.`, '⚠️');
+        return;
+      }
+
       const newGw = {
         channel,
         origins: activeGwOrigins.length > 0 ? [...activeGwOrigins] : [{ alias: 'Custom Provider', url: 'https://api.empresa.com' }],
@@ -921,12 +927,14 @@
       renderGatewaysList();
     }
 
-    /* Modal Popup Gateway Editing Logic */
+    /* Modal Popup Gateway Editing & Renaming Logic */
     function openEditGatewayModal(id) {
       const gw = gatewaysList.find(g => g.id === id);
       if (!gw) return;
 
       editingGwId = gw.id;
+      editingOriginalChannel = gw.channel;
+
       document.getElementById('modalEditGwChannel').value = gw.channel;
       document.getElementById('modalEditHmacSecret').value = gw.hmacSecret || '';
       document.getElementById('modalEditFilter').value = gw.filter || '';
@@ -944,6 +952,7 @@
     function closeEditGwModal() {
       document.getElementById('editGwModalOverlay').classList.add('hidden');
       editingGwId = null;
+      editingOriginalChannel = '';
     }
 
     function addModalEditSourceOrigin() {
@@ -1008,17 +1017,37 @@
       e.preventDefault();
       if (!editingGwId) return;
 
+      const newChannel = document.getElementById('modalEditGwChannel').value.trim();
+      if (!newChannel) return;
+
+      // Check for name collisions with other existing gateways
+      if (newChannel !== editingOriginalChannel && gatewaysList.some(g => g.channel === newChannel && g.id !== editingGwId)) {
+        showModal('Colisión de Nombres', `Ya existe otro Gateway con el nombre <strong>${newChannel}</strong>. Por favor usa un nombre único.`, '⚠️');
+        return;
+      }
+
       const index = gatewaysList.findIndex(g => g.id === editingGwId);
       if (index !== -1) {
+        const isRenamed = newChannel !== editingOriginalChannel;
+
+        gatewaysList[index].channel = newChannel;
         gatewaysList[index].hmacSecret = document.getElementById('modalEditHmacSecret').value.trim();
         gatewaysList[index].filter = document.getElementById('modalEditFilter').value.trim();
         gatewaysList[index].origins = [...modalEditGwOrigins];
         gatewaysList[index].targets = [...modalEditGwTargets];
 
+        // Migrate local queue cache reference if renamed
+        if (isRenamed && cachedQueueData[editingOriginalChannel]) {
+          cachedQueueData[newChannel] = cachedQueueData[editingOriginalChannel];
+          delete cachedQueueData[editingOriginalChannel];
+        }
+
         localStorage.setItem('GRILLOUT_GATEWAYS', JSON.stringify(gatewaysList));
         renderGatewaysList();
         closeEditGwModal();
-        showModal('Gateway Actualizado', `Se han guardado los cambios para el Webhook Gateway <strong>${gatewaysList[index].channel}</strong>.`, '✏️');
+
+        const renameMsg = isRenamed ? `<br>🏷️ Canal renombrado: <code>${editingOriginalChannel}</code> ➔ <code>${newChannel}</code>.` : '';
+        showModal('Gateway Actualizado', `Se han guardado los cambios para el Webhook Gateway <strong>${newChannel}</strong>.${renameMsg}`, '✏️');
       }
     }
 
@@ -1062,7 +1091,7 @@
                 </div>
               </div>
               <div style="display: flex; gap: 8px;">
-                <button class="btn btn-secondary" onclick="openEditGatewayModal(${g.id})" style="padding: 6px 12px; font-size: 0.8rem;">✏️ Edit Gateway</button>
+                <button class="btn btn-secondary" onclick="openEditGatewayModal(${g.id})" style="padding: 6px 12px; font-size: 0.8rem;">✏️ Edit / Rename</button>
                 <button class="btn" onclick="copyGatewayUrl('${g.channel}')" style="padding: 6px 12px; font-size: 0.8rem;">📋 Copy Webhook URL</button>
                 <button class="btn btn-danger" onclick="removeGateway(${g.id})">Delete</button>
               </div>
