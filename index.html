@@ -318,9 +318,9 @@
 
   <!-- Tabbed Navigation Bar -->
   <nav class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('gateways')">📡 Webhook Gateways & Flow Registry</button>
+    <button class="tab-btn active" onclick="switchTab('dashboard')">🎛️ Queue Monitor</button>
+    <button class="tab-btn" onclick="switchTab('gateways')">📡 Webhook Gateways & Flow Registry</button>
     <button class="tab-btn" onclick="switchTab('simulator')">🧪 Developer Payload Simulator</button>
-    <button class="tab-btn" onclick="switchTab('dashboard')">🎛️ Queue Monitor</button>
     <button class="tab-btn" onclick="switchTab('publisher')">📢 Multicast Publisher</button>
     <button class="tab-btn" onclick="switchTab('targets')">📍 Target Endpoints Registry</button>
     <button class="tab-btn" onclick="switchTab('settings')">⚙️ Module Controls & Settings</button>
@@ -330,8 +330,37 @@
 
   <main>
 
+    <!-- TAB 1: DASHBOARD & QUEUE MONITOR (FIRST TAB) -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="card full-width">
+        <div class="card-title">
+          <span>KR Active Stridulation Channels & Queue Monitor</span>
+          <button class="btn btn-secondary" onclick="loadQueues()" style="margin-left: auto; padding: 6px 12px;">🔄 Refresh</button>
+        </div>
+        <div class="help-tooltip">
+          💡 <strong>Monitor de Colas Pasivas:</strong> Visualiza en tiempo real los canales de notificaciones almacenados en <code>.grillout-storage</code> sin ningún servidor encendido en reposo.
+        </div>
+        <table id="queuesTable">
+          <thead>
+            <tr>
+              <th>Channel Name</th>
+              <th>Pending Chirps</th>
+              <th>DLQ Items</th>
+              <th>Lease Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="queuesBody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted);">Authenticate with your GitHub PAT to load active queues.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- TAB 0: WEBHOOK GATEWAYS & END-TO-END FLOW REGISTRY -->
-    <section id="tab-gateways" class="tab-content active">
+    <section id="tab-gateways" class="tab-content">
       <div class="card full-width">
         <div class="card-title">
           <span>📡 Webhook Gateway URLs & Multicast Flow Registry ($0 Infrastructure)</span>
@@ -422,35 +451,6 @@
           <h4 id="simResultTitle" style="color: var(--accent-lime); font-family: var(--font-heading);">Simulation Result</h4>
           <div id="simResultBody" style="font-family: var(--font-code); font-size: 0.85rem; margin-top: 10px; color: var(--text-main);"></div>
         </div>
-      </div>
-    </section>
-
-    <!-- TAB 1: DASHBOARD & QUEUE MONITOR -->
-    <section id="tab-dashboard" class="tab-content">
-      <div class="card full-width">
-        <div class="card-title">
-          <span>KR Active Stridulation Channels & Queue Monitor</span>
-          <button class="btn btn-secondary" onclick="loadQueues()" style="margin-left: auto; padding: 6px 12px;">🔄 Refresh</button>
-        </div>
-        <div class="help-tooltip">
-          💡 <strong>Monitor de Colas Pasivas:</strong> Visualiza en tiempo real los canales de notificaciones almacenados en <code>.grillout-storage</code> sin ningún servidor encendido en reposo.
-        </div>
-        <table id="queuesTable">
-          <thead>
-            <tr>
-              <th>Channel Name</th>
-              <th>Pending Chirps</th>
-              <th>DLQ Items</th>
-              <th>Lease Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="queuesBody">
-            <tr>
-              <td colspan="5" style="text-align: center; color: var(--text-muted);">Authenticate with your GitHub PAT to load active queues.</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </section>
 
